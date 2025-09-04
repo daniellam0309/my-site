@@ -22,30 +22,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout (with LFS)
         uses: actions/checkout@v4
+        with:
+          lfs: true          # ← 這行很關鍵，下載 Git LFS 真實檔案
 
       - name: Prepare public folder
         run: |
           rm -rf public
           mkdir -p public
-          # 複製要發佈的檔案
           cp -f index.html public/ || true
           cp -f admin.html public/ || true
           cp -f 404.html public/ || true
-          # 複製 assets 整個資料夾（含圖片）
           if [ -d assets ]; then cp -R assets public/; fi
-          # 你若之後有 css/js/fonts 也一併複製
           if [ -d css ];    then cp -R css public/; fi
           if [ -d js ];     then cp -R js public/; fi
           if [ -d fonts ];  then cp -R fonts public/; fi
-          # 千萬不要把 .env 發佈到前端
           rm -f public/.env || true
-          # 檢查一下打包大小
-          echo "Public size:"
+          echo "----- Public size -----"
           du -sh public || true
-          echo "Public tree:"
-          ls -al public || true
+          echo "----- Public files -----"
+          find public -maxdepth 2 -type f -printf "%p (%k KB)\n" | head -n 100 || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -53,7 +50,7 @@ jobs:
       - name: Upload static files
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public   # ← 明確上傳 public，內含 assets 與頁面
+          path: ./public
 
       - name: Deploy to GitHub Pages
         id: deployment
