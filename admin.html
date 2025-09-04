@@ -1,1 +1,292 @@
-<!doctype html><html><body><h1>Admin</h1></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FWFS 預約管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{background:#f8fafc}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    dialog::backdrop{background:rgba(0,0,0,.35)}
+  </style>
+</head>
+<body class="text-slate-900">
+  <!-- 頂部 -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="./" class="font-semibold">漁人碼頭足球場</a>
+        <span class="text-slate-400">/</span>
+        <span class="text-slate-600">預約管理</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="whoami" class="text-sm text-slate-600 hidden"></span>
+        <button id="logout" class="text-sm rounded-full px-3 py-1.5 border border-slate-300 hidden">登出</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-5 py-8">
+    <!-- 未登入 -->
+    <section id="authCard" class="card p-6 max-w-md mx-auto">
+      <h1 class="text-xl font-semibold">管理員登入</h1>
+      <p class="mt-1 text-sm text-slate-600">輸入 Email，我們會寄出一次性登入連結（magic link）。</p>
+      <form id="loginForm" class="mt-4 flex items-center gap-2">
+        <input id="email" type="email" required placeholder="you@example.com"
+               class="flex-1 rounded-xl border border-slate-300 px-3 py-2" />
+        <button class="rounded-xl px-4 py-2 bg-black text-white">寄送連結</button>
+      </form>
+      <p id="loginMsg" class="mt-3 text-sm text-slate-600"></p>
+      <p class="mt-4 text-xs text-slate-500">已限制只有授權信箱可「編輯/刪除」。</p>
+    </section>
+
+    <!-- 已登入：工具列 -->
+    <section id="toolbar" class="mt-8 hidden">
+      <div class="card p-4">
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-slate-600">日期</label>
+            <input id="dateFilter" type="date" class="rounded-xl border border-slate-300 px-3 py-2"/>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-slate-600">搜尋</label>
+            <input id="q" placeholder="姓名 / 電話 / 備註" class="rounded-xl border border-slate-300 px-3 py-2"/>
+          </div>
+          <div class="sm:ml-auto flex items-center gap-2">
+            <button id="refresh" class="rounded-xl px-4 py-2 border border-slate-300">重新整理</button>
+            <button id="exportCsv" class="rounded-xl px-4 py-2 bg-black text-white">匯出 CSV</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 已登入：表格 -->
+    <section id="tableCard" class="mt-6 hidden">
+      <div class="card overflow-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="text-left p-3">#</th>
+              <th class="text-left p-3">日期</th>
+              <th class="text-left p-3">開始</th>
+              <th class="text-left p-3">時長</th>
+              <th class="text-left p-3">姓名</th>
+              <th class="text-left p-3">電話</th>
+              <th class="text-left p-3">備註</th>
+              <th class="text-left p-3">建立時間</th>
+              <th class="text-left p-3">動作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">
+        ⚠️ 若編輯或刪除失敗，請確認你是用授權 Email 登入（RLS policy 已綁定）。
+      </p>
+    </section>
+  </main>
+
+  <!-- 編輯對話框 -->
+  <dialog id="editDlg" class="rounded-2xl p-0 w-[560px] max-w-[92vw]">
+    <form id="editForm" method="dialog" class="p-5">
+      <h3 class="text-lg font-semibold">編輯預約</h3>
+      <input type="hidden" id="edit_id"/>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+        <div>
+          <label class="text-sm text-slate-600">姓名</label>
+          <input id="edit_name" class="w-full rounded-xl border border-slate-300 px-3 py-2" required/>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">電話</label>
+          <input id="edit_phone" class="w-full rounded-xl border border-slate-300 px-3 py-2" required/>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">日期</label>
+          <input id="edit_date" type="date" class="w-full rounded-xl border border-slate-300 px-3 py-2" required/>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">開始時間</label>
+          <input id="edit_start" type="time" class="w-full rounded-xl border border-slate-300 px-3 py-2" required/>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">時長（小時）</label>
+          <select id="edit_dur" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="text-sm text-slate-600">備註</label>
+          <input id="edit_notes" class="w-full rounded-xl border border-slate-300 px-3 py-2"/>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="editCancel" class="rounded-xl px-4 py-2 border border-slate-300">取消</button>
+        <button type="submit" class="rounded-xl px-4 py-2 bg-black text-white">儲存</button>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+const SUPABASE_URL = "https://cbebpuqfkprhamwsbhdb.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const authCard = document.getElementById('authCard');
+const toolbar = document.getElementById('toolbar');
+const tableCard = document.getElementById('tableCard');
+const loginForm = document.getElementById('loginForm');
+const loginMsg = document.getElementById('loginMsg');
+const emailInput = document.getElementById('email');
+const whoami = document.getElementById('whoami');
+const logoutBtn = document.getElementById('logout');
+
+const dateEl = document.getElementById('dateFilter');
+const qEl = document.getElementById('q');
+const tbody = document.getElementById('tbody');
+
+const editDlg = document.getElementById('editDlg');
+const editForm = document.getElementById('editForm');
+const editCancel = document.getElementById('editCancel');
+
+document.getElementById('refresh').onclick = load;
+document.getElementById('exportCsv').onclick = exportCSV;
+logoutBtn.onclick = async ()=>{ await client.auth.signOut(); location.reload(); };
+
+dateEl.value = new Date().toISOString().slice(0,10);
+
+loginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  loginMsg.textContent = "寄送中…";
+  const { error } = await client.auth.signInWithOtp({
+    email: emailInput.value,
+    options: { emailRedirectTo: location.href }
+  });
+  loginMsg.textContent = error ? ("寄送失敗：" + error.message) : "已寄出魔術連結，請到 Email 點擊登入。";
+});
+
+// 登入狀態
+client.auth.onAuthStateChange(async (event, session)=>{
+  if (session?.user) showApp(session.user);
+});
+(async ()=>{
+  const { data: { session } } = await client.auth.getSession();
+  if (session?.user) showApp(session.user);
+})();
+
+async function showApp(user){
+  whoami.textContent = `已登入：${user.email}`;
+  whoami.classList.remove('hidden');
+  logoutBtn.classList.remove('hidden');
+  authCard.classList.add('hidden');
+  toolbar.classList.remove('hidden');
+  tableCard.classList.remove('hidden');
+  await load();
+}
+
+// 讀取 + 篩選 + Realtime 訂閱
+async function load(){
+  const { data, error } = await client
+    .from('bookings')
+    .select('id,date,start_time,duration_hours,name,phone,notes,created_at')
+    .order('date',{ascending:true})
+    .order('start_time',{ascending:true});
+  if (error){ console.error(error); return; }
+
+  const filterDate = dateEl.value;
+  const q = qEl.value?.toLowerCase().trim() || '';
+  const list = (data || []).filter(r => {
+    const okDate = !filterDate || r.date === filterDate;
+    const text = `${r.name||''} ${r.phone||''} ${r.notes||''}`.toLowerCase();
+    const okQ = !q || text.includes(q);
+    return okDate && okQ;
+  });
+
+  tbody.innerHTML = list.map((r,i)=>rowHtml(r,i)).join('');
+
+  if (!window._subscribed){
+    client.channel('bookings-admin')
+      .on('postgres_changes',{event:'*',schema:'public',table:'bookings'},()=>load())
+      .subscribe();
+    window._subscribed = true;
+  }
+}
+
+function rowHtml(r,i){
+  const t = (r.start_time||'').slice(0,5);
+  const created = (r.created_at||'').replace('T',' ').slice(0,19);
+  return `
+  <tr class="border-t">
+    <td class="p-3">${i+1}</td>
+    <td class="p-3">${r.date}</td>
+    <td class="p-3">${t}</td>
+    <td class="p-3">${r.duration_hours||1} 小時</td>
+    <td class="p-3">${escapeHtml(r.name||'')}</td>
+    <td class="p-3">${escapeHtml(r.phone||'')}</td>
+    <td class="p-3">${escapeHtml(r.notes||'')}</td>
+    <td class="p-3">${created}</td>
+    <td class="p-3 flex gap-3">
+      <button class="text-blue-600 hover:underline" onclick='openEdit(${JSON.stringify(JSON.stringify(r))})'>編輯</button>
+      <button class="text-red-600 hover:underline" onclick="del(${r.id})">刪除</button>
+    </td>
+  </tr>`;
+}
+
+function openEdit(json){
+  const r = JSON.parse(json);
+  document.getElementById('edit_id').value = r.id;
+  document.getElementById('edit_name').value = r.name || '';
+  document.getElementById('edit_phone').value = r.phone || '';
+  document.getElementById('edit_date').value = r.date || '';
+  document.getElementById('edit_start').value = (r.start_time||'').slice(0,5);
+  document.getElementById('edit_dur').value = r.duration_hours || 1;
+  document.getElementById('edit_notes').value = r.notes || '';
+  editDlg.showModal();
+}
+editCancel.onclick = ()=>editDlg.close();
+
+editForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const id = +document.getElementById('edit_id').value;
+  const upd = {
+    name: document.getElementById('edit_name').value.trim(),
+    phone: document.getElementById('edit_phone').value.trim(),
+    date: document.getElementById('edit_date').value,
+    start_time: document.getElementById('edit_start').value + ':00',
+    duration_hours: +document.getElementById('edit_dur').value,
+    notes: document.getElementById('edit_notes').value.trim()
+  };
+  const { error } = await client.from('bookings').update(upd).eq('id', id);
+  if (error){ alert('更新失敗：' + error.message); return; }
+  editDlg.close();
+  await load();
+});
+
+async function del(id){
+  if (!confirm('確定刪除此筆預約？')) return;
+  const { error } = await client.from('bookings').delete().eq('id', id);
+  if (error){ alert('刪除失敗：' + error.message); return; }
+  await load();
+}
+
+function exportCSV(){
+  const rows = [['id','date','start_time','duration_hours','name','phone','notes','created_at']];
+  Array.from(tbody.querySelectorAll('tr')).forEach(tr=>{
+    const cols = Array.from(tr.children).map(td=>td.textContent);
+    rows.push(cols.slice(0,8));
+  });
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'bookings.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+</script>
+</body>
+</html>
