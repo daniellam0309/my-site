@@ -1,119 +1,281 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Your Brand — 現代極簡單頁網站</title>
-    <meta name="description" content="A clean, responsive landing page you can deploy to GitHub Pages in minutes."/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/>
-    <style>
-      /* Optional: subtle animated gradient background */
-      .gradient-bg {
-        background: radial-gradient(1000px 500px at 10% 10%, rgba(59,130,246,.15), transparent 60%),
-                    radial-gradient(800px 400px at 90% 20%, rgba(236,72,153,.12), transparent 50%),
-                    radial-gradient(900px 500px at 50% 120%, rgba(34,197,94,.12), transparent 55%);
-      }
-    </style>
-  </head>
-  <body class="antialiased text-slate-800">
-    <header class="gradient-bg">
-      <nav class="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between">
-        <a href="#" class="flex items-center gap-3">
-          <img src="/assets/logo.svg" alt="Logo" class="h-9 w-9"/>
-          <span class="font-semibold tracking-tight">Your Brand</span>
-        </a>
-        <div class="hidden md:flex items-center gap-6 text-sm">
-          <a href="#about" class="hover:opacity-80">關於我們</a>
-          <a href="#services" class="hover:opacity-80">服務</a>
-          <a href="#contact" class="hover:opacity-80">聯絡</a>
-          <a href="https://github.com/" target="_blank" class="inline-flex items-center gap-2 rounded-xl px-4 py-2 border border-slate-200 hover:bg-slate-50 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.83 1.25 1.83 1.25 1.07 1.83 2.82 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.5.12-3.12 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.62.24 2.82.12 3.12.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
-            GitHub
-          </a>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FWFS — 漁人碼頭足球場｜線上預約</title>
+<meta name="description" content="澳門漁人碼頭足球場｜人造草地｜多功能運動草地｜線上預約租場"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="icon" href="/assets/logo.png"/>
+<style>
+  :root{
+    --accent:#7C3AED; /* purple-600 */
+    --accent-2:#22C55E; /* green-500 */
+  }
+  html,body{scroll-behavior:smooth}
+  .blurglass{backdrop-filter:blur(16px) saturate(140%); background:rgba(255,255,255,.55);}
+  .fade{opacity:0; transform:translateY(8px); animation:fadeIn .6s ease forwards; }
+  @keyframes fadeIn{to{opacity:1; transform:none}}
+</style>
+</head>
+<body class="antialiased bg-white text-slate-900 selection:bg-violet-200/60">
+  <!-- Top promo -->
+  <div class="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] text-white text-sm">
+    <div class="max-w-7xl mx-auto px-5 py-2 flex items-center justify-between">
+      <span>🎯 期間限定 <b>8 折優惠</b></span>
+      <a href="#booking" class="underline decoration-white/70 hover:opacity-90">立即預約</a>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="sticky top-0 z-40 border-b border-black/5 bg-white/70 blurglass">
+    <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <img src="/assets/logo.png" class="h-9 w-9 object-contain" alt="FWFS"/>
+        <div class="leading-tight">
+          <p class="font-semibold">漁人碼頭足球場</p>
+          <p class="text-xs text-slate-600">Fisherman’s Wharf Football Stadium</p>
         </div>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm">
+        <a href="#about" class="hover:text-slate-600">關於</a>
+        <a href="#pricing" class="hover:text-slate-600">價目</a>
+        <a href="#booking" class="hover:text-slate-600">預約</a>
+        <a href="#contact" class="hover:text-slate-600">聯絡</a>
       </nav>
+      <a href="#booking" class="rounded-full px-4 py-2 bg-black text-white text-sm hover:opacity-90">預約場地</a>
+    </div>
+  </header>
 
-      <section class="mx-auto max-w-7xl px-6 pb-24 pt-8 md:pt-16">
-        <div class="grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h1 class="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">
-              用 GitHub Pages <span class="bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 bg-clip-text text-transparent">幾分鐘</span> 部署網站
-            </h1>
-            <p class="mt-5 text-slate-600 text-lg">
-              這是一個可立即上線的極簡單頁網站樣板。修改文字、加入你的品牌，即可發佈。
-            </p>
-            <div class="mt-7 flex flex-wrap gap-3">
-              <a href="#services" class="inline-flex items-center justify-center rounded-2xl px-5 py-3 bg-black text-white hover:opacity-90">
-                了解服務
-              </a>
-              <a href="#contact" class="inline-flex items-center justify-center rounded-2xl px-5 py-3 border border-slate-300 hover:bg-slate-50">
-                取得報價
-              </a>
-            </div>
-            <p class="mt-4 text-xs text-slate-500">此頁使用 Tailwind CDN、無需建置流程。</p>
-          </div>
-          <div class="rounded-3xl border border-slate-200 p-6 shadow-sm bg-white">
-            <div class="aspect-[16/10] rounded-2xl bg-gradient-to-br from-slate-100 to-white grid place-items-center">
-              <div class="text-center px-6">
-                <p class="text-slate-500">把你的截圖、產品或品牌圖放在這裡</p>
-                <p class="text-sm text-slate-400 mt-2">/assets 目錄中新增影像檔，並在 index.html 替換路徑</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </header>
-
-    <main class="mx-auto max-w-7xl px-6 py-20">
-      <section id="about" class="py-12">
-        <h2 class="text-2xl font-semibold">關於我們</h2>
-        <p class="mt-4 text-slate-600 leading-7">
-          這裡放你的品牌敘事與價值主張。建議 2–3 句，簡明扼要。
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <div class="h-full w-full bg-[radial-gradient(1000px_500px_at_10%_0%,rgba(124,58,237,.10),transparent_60%),radial-gradient(900px_400px_at_90%_20%,rgba(34,197,94,.10),transparent_55%)]"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-5 py-20 grid md:grid-cols-12 gap-10 items-center">
+      <div class="md:col-span-7 fade">
+        <h1 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
+          足球場 🏟️  人造草地 🌱  歡迎租場 🤝
+        </h1>
+        <p class="mt-5 text-lg text-slate-700 leading-7">
+          澳門漁人碼頭足球場（<b>50×30 m</b>）多功能運動草地，開放時間 <b>09:00–22:00</b>。<br/>
+          線上預約避免重覆時段，快速完成登記。
         </p>
-      </section>
-
-      <section id="services" class="py-12">
-        <h2 class="text-2xl font-semibold">服務項目</h2>
-        <div class="mt-6 grid md:grid-cols-3 gap-6">
-          <div class="rounded-2xl border border-slate-200 p-6 bg-white">
-            <h3 class="font-medium">方案 A</h3>
-            <p class="mt-2 text-sm text-slate-600">一句話說明你提供的價值。</p>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-6 bg-white">
-            <h3 class="font-medium">方案 B</h3>
-            <p class="mt-2 text-sm text-slate-600">一句話說明你提供的價值。</p>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-6 bg-white">
-            <h3 class="font-medium">方案 C</h3>
-            <p class="mt-2 text-sm text-slate-600">一句話說明你提供的價值。</p>
-          </div>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#booking" class="rounded-full px-6 py-3 bg-black text-white hover:opacity-90">立即預約</a>
+          <a href="#pricing" class="rounded-full px-6 py-3 border border-slate-300 hover:bg-slate-50">查看價目</a>
         </div>
-      </section>
-
-      <section id="contact" class="py-12">
-        <h2 class="text-2xl font-semibold">聯絡我們</h2>
-        <div class="mt-6 rounded-2xl border border-slate-200 p-6 bg-white">
-          <form action="mailto:hello@example.com" method="post" enctype="text/plain" class="grid md:grid-cols-2 gap-4">
-            <input required name="name" placeholder="你的名字" class="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring focus:ring-slate-200"/>
-            <input required type="email" name="email" placeholder="你的 Email" class="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring focus:ring-slate-200"/>
-            <textarea required name="message" placeholder="你的需求…" class="md:col-span-2 rounded-xl border border-slate-300 px-4 py-3 h-32 outline-none focus:ring focus:ring-slate-200"></textarea>
-            <button class="md:col-span-2 w-full rounded-2xl px-5 py-3 bg-black text-white hover:opacity-90">送出</button>
-          </form>
-          <p class="mt-3 text-xs text-slate-500">* 你也可以改用第三方表單服務（如 Formspree）或自家後端。</p>
+        <div class="mt-6 grid grid-cols-3 gap-4 text-sm">
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">尺寸</p><p class="font-medium">50×30 m</p></div>
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">材質</p><p class="font-medium">人造草地</p></div>
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">時間</p><p class="font-medium">09:00–22:00</p></div>
         </div>
-      </section>
-    </main>
-
-    <footer class="border-t border-slate-200">
-      <div class="mx-auto max-w-7xl px-6 py-10 text-sm text-slate-500 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-        <p>© <span id="year"></span> Your Brand. All rights reserved.</p>
-        <a href="https://github.com/" class="hover:opacity-80">GitHub</a>
       </div>
-    </footer>
+      <div class="md:col-span-5">
+        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm p-6">
+          <img src="/assets/logo.png" class="mx-auto max-h-60 object-contain" alt="FWFS logo"/>
+          <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-xl bg-violet-50 text-violet-700 border border-violet-200 p-3">周一–五：MOP 500/hr <span class="opacity-60">(8折 400)</span></div>
+            <div class="rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 p-3">週末/假：MOP 600/hr <span class="opacity-60">(8折 480)</span></div>
+            <div class="rounded-xl bg-slate-50 text-slate-700 border border-slate-200 p-3 col-span-2">夜間 18–22：MOP 800/hr <span class="opacity-60">(8折 640)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script>
-      document.getElementById('year').textContent = new Date().getFullYear();
-    </script>
-  </body>
+  <!-- Pricing (with your poster) -->
+  <section id="pricing" class="max-w-7xl mx-auto px-5 py-16">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-semibold">價目表</h2>
+      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">8 折優惠</span>
+    </div>
+    <div class="mt-6 grid md:grid-cols-2 gap-6 items-start">
+      <div class="rounded-2xl bg-white p-2 border border-slate-200">
+        <img src="/assets/price-list.jpg" alt="價目表" class="rounded-xl w-full object-contain"/>
+      </div>
+      <div class="rounded-2xl bg-white p-6 border border-slate-200">
+        <ul class="text-slate-700 space-y-2">
+          <li>星期一至五：MOP 500 / hr（8 折 → MOP 400）</li>
+          <li>週末及公眾假期：MOP 600 / hr（8 折 → MOP 480）</li>
+          <li>夜間 18:00–22:00：MOP 800 / hr（8 折 → MOP 640）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking -->
+  <section id="booking" class="max-w-7xl mx-auto px-5 py-16">
+    <h2 class="text-2xl font-semibold">線上預約</h2>
+    <p class="mt-2 text-slate-600">先選日期再選時段（整點、每次 1 小時）。系統會自動避免重覆。</p>
+
+    <div class="mt-6 grid md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+        <div class="flex items-center justify-between">
+          <button id="prevMonth" class="px-3 py-2 rounded-xl border border-slate-300">上個月</button>
+          <h3 id="monthLabel" class="font-medium"></h3>
+          <button id="nextMonth" class="px-3 py-2 rounded-xl border border-slate-300">下個月</button>
+        </div>
+        <div id="calendar" class="mt-4 grid grid-cols-7 gap-2 text-sm"></div>
+        <div id="slots" class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2"></div>
+      </div>
+
+      <form id="bookingForm" class="rounded-2xl bg-white border border-slate-200 p-6 space-y-3">
+        <div>
+          <label class="text-sm text-slate-600">已選日期</label>
+          <input id="date" name="date" class="w-full rounded-xl border border-slate-300 px-3 py-2" type="text" readonly required />
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">開始時間（1 小時）</label>
+          <input id="start_time" name="start_time" class="w-full rounded-xl border border-slate-300 px-3 py-2" type="time" step="3600" required />
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">聯絡人</label>
+          <input id="name" name="name" class="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="你的名字" required />
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">電話</label>
+          <input id="phone" name="phone" class="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="+853 ..." required />
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">備註</label>
+          <textarea id="notes" name="notes" class="w-full h-20 rounded-xl border border-slate-300 px-3 py-2" placeholder="人數 / 活動類型…"></textarea>
+        </div>
+        <button class="w-full rounded-full px-5 py-3 bg-black text-white hover:opacity-90">送出預約</button>
+        <p id="status" class="text-sm text-slate-600"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="max-w-7xl mx-auto px-5 py-16">
+    <div class="rounded-2xl bg-white border border-slate-200 p-6 grid md:grid-cols-2 gap-6">
+      <div>
+        <h2 class="text-2xl font-semibold">聯絡我們</h2>
+        <ul class="mt-4 text-slate-700 space-y-2">
+          <li>📞 租場熱線：<a href="tel:+85368021668" class="underline">+853 68021668</a></li>
+          <li>🕘 開放時間：09:00–22:00</li>
+          <li>📍 Fisherman’s Wharf Football Stadium, Macau</li>
+        </ul>
+      </div>
+      <div class="rounded-xl border border-slate-200 p-4">
+        <iframe class="w-full h-64 rounded-lg" loading="lazy" allowfullscreen src="https://www.openstreetmap.org/export/embed.html?bbox=113.538%2C22.187%2C113.544%2C22.194&layer=mapnik"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-5 py-10 text-sm text-slate-500 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+      <p>© <span id="year"></span> Fisherman’s Wharf Football Stadium</p>
+      <a href="#booking" class="hover:opacity-80">立即預約</a>
+    </div>
+  </footer>
+
+<script>
+// Optional backend (Supabase). 留空=示範模式（僅本機）。
+const SUPABASE_URL = "";
+const SUPABASE_ANON_KEY = "";
+let client = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY) { client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+
+const openHour = 9, closeHour = 22;
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const monthLabel = document.getElementById('monthLabel');
+const calendarEl = document.getElementById('calendar');
+const slotsEl = document.getElementById('slots');
+const dateInput = document.getElementById('date');
+const startInput = document.getElementById('start_time');
+const form = document.getElementById('bookingForm');
+const statusEl = document.getElementById('status');
+
+let current = new Date(); current.setDate(1);
+renderCalendar();
+document.getElementById('prevMonth').onclick = () => { current.setMonth(current.getMonth()-1); renderCalendar(); };
+document.getElementById('nextMonth').onclick = () => { current.setMonth(current.getMonth()+1); renderCalendar(); };
+
+function fmtDate(d){ return d.toISOString().slice(0,10); }
+function pad(n){ return n.toString().padStart(2,'0'); }
+function range(a,b){ return Array.from({length:b-a}, (_,i)=>i+a); }
+
+async function renderCalendar(){
+  monthLabel.textContent = `${current.getFullYear()}年 ${current.getMonth()+1}月`;
+  calendarEl.innerHTML='';
+  const firstDay = new Date(current);
+  const startWeekday = (firstDay.getDay()+6)%7;
+  const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+  for (let i=0;i<startWeekday;i++){ calendarEl.appendChild(cell('')); }
+  for (let d=1; d<=daysInMonth; d++){
+    const day = new Date(current.getFullYear(), current.getMonth(), d);
+    const btn = cell(d);
+    btn.classList.add('cursor-pointer','hover:bg-slate-50','rounded-lg','p-2','text-center');
+    btn.onclick = ()=> selectDate(day);
+    calendarEl.appendChild(btn);
+  }
+  const today = new Date();
+  const defaultDay = (today.getMonth()===current.getMonth() && today.getFullYear()===current.getFullYear()) ? today : new Date(current.getFullYear(), current.getMonth(), 1);
+  selectDate(defaultDay);
+}
+function cell(content){ const el=document.createElement('div'); el.textContent=content; el.className="min-h-[40px] grid place-items-center"; return el; }
+
+async function selectDate(day){
+  const d = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+  const dateStr = fmtDate(d);
+  dateInput.value = dateStr;
+  await renderSlots(dateStr);
+}
+
+async function fetchBookings(dateStr){
+  if (client){
+    const { data, error } = await client.from('bookings').select('start_time').eq('date', dateStr);
+    if (error) { console.error(error); return []; }
+    return data.map(r => r.start_time);
+  } else {
+    const all = JSON.parse(localStorage.getItem('fwfs_bookings')||'[]');
+    return all.filter(b => b.date===dateStr).map(b => b.start_time);
+  }
+}
+
+async function renderSlots(dateStr){
+  slotsEl.innerHTML='';
+  const taken = await fetchBookings(dateStr);
+  range(openHour, closeHour).forEach(h => { 
+    const t = `${pad(h)}:00`;
+    const b = document.createElement('button');
+    b.textContent = t; b.type="button";
+    const disabled = taken.includes(t);
+    b.className = "px-3 py-2 rounded-full border text-sm " + (disabled ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "hover:bg-black hover:text-white");
+    b.disabled = disabled;
+    b.onclick = () => { startInput.value = t; Array.from(slotsEl.children).forEach(x=>x.classList.remove('ring','ring-[var(--accent)]')); b.classList.add('ring','ring-[var(--accent)]'); };
+    slotsEl.appendChild(b);
+  });
+}
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  statusEl.textContent = "檢查時段中…";
+  const payload = {
+    date: dateInput.value,
+    start_time: startInput.value,
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+  };
+  if (!payload.date || !payload.start_time) { statusEl.textContent = "請先選擇日期與時段。"; return; }
+  const taken = await fetchBookings(payload.date);
+  if (taken.includes(payload.start_time)) { statusEl.textContent = "此時段剛被預約，請換一個時段。"; await renderSlots(payload.date); return; }
+  try { 
+    if (client){
+      const { error } = await client.from('bookings').insert(payload);
+      if (error) throw error;
+    } else {
+      const all = JSON.parse(localStorage.getItem('fwfs_bookings')||'[]'); all.push(payload); localStorage.setItem('fwfs_bookings', JSON.stringify(all));
+    }
+    statusEl.textContent = "預約成功！我們將盡快電話確認。";
+    await renderSlots(payload.date);
+    form.reset(); document.getElementById('date').value = payload.date;
+  } catch (err){ console.error(err); statusEl.textContent = "預約失敗：" + (err.message || err); }
+});
+</script>
+</body>
 </html>
