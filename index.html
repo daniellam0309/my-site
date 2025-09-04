@@ -1,98 +1,316 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>漁人碼頭足球場 - 預約系統</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>漁人碼頭足球場｜線上預約</title>
+  <meta name="description" content="Fisherman’s Wharf Football Stadium｜人造草地｜多功能運動草地｜線上預約｜8折優惠"/>
+  <link rel="icon" href="assets/logo.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    :root{ --violet:#7C3AED; --green:#22C55E; }
+    body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .glass{ backdrop-filter: blur(14px); background: rgba(255,255,255,.72); }
+    .rad { background:
+      radial-gradient(1200px 600px at 5% 0%, rgba(124,58,237,.12), transparent 60%),
+      radial-gradient(1000px 500px at 95% 10%, rgba(34,197,94,.12), transparent 55%); }
+    .ring-accent{ box-shadow: 0 0 0 3px rgba(124,58,237,.28); }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
-  <div class="w-full max-w-2xl bg-white shadow-lg rounded-xl p-8">
-    <h1 class="text-2xl font-bold text-center mb-6">⚽ 漁人碼頭足球場預約</h1>
+<body class="bg-white text-slate-900">
 
-    <!-- 表單 -->
-    <form id="booking-form" class="space-y-4">
-      <input id="name" type="text" placeholder="姓名" required class="w-full p-3 border rounded-lg">
-      <input id="phone" type="text" placeholder="電話" required class="w-full p-3 border rounded-lg">
-      <input id="date" type="date" required class="w-full p-3 border rounded-lg">
-      <select id="time" required class="w-full p-3 border rounded-lg">
-        <option value="">選擇時段</option>
-        <option value="08:00-10:00">08:00 - 10:00</option>
-        <option value="10:00-12:00">10:00 - 12:00</option>
-        <option value="14:00-16:00">14:00 - 16:00</option>
-        <option value="16:00-18:00">16:00 - 18:00</option>
-        <option value="18:00-20:00">18:00 - 20:00</option>
-      </select>
-      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
-        送出預約
-      </button>
-    </form>
-
-    <!-- 訊息 -->
-    <p id="message" class="mt-4 text-center text-sm"></p>
-
-    <!-- 預約清單 -->
-    <h2 class="text-xl font-bold mt-8 mb-4">📋 已有預約</h2>
-    <ul id="booking-list" class="space-y-2 text-sm"></ul>
+  <!-- 顶部優惠帶 -->
+  <div class="bg-gradient-to-r from-[var(--violet)] to-[var(--green)] text-white text-sm">
+    <div class="max-w-7xl mx-auto px-5 py-2 flex items-center justify-between">
+      <span>🎯 現正 <b>8 折優惠</b> — 立即預約！</span>
+      <a href="#booking" class="underline decoration-white/70 hover:opacity-90">前往預約</a>
+    </div>
   </div>
 
-  <script>
-    const supabaseUrl = "https://cbebpuqfkprhamwsbhdb.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g";
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  <!-- 導覽 -->
+  <header class="sticky top-0 z-40 border-b border-black/5 bg-white/75 glass">
+    <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <img src="assets/logo.png" class="h-10 w-10 object-contain" alt="FWFS"/>
+        <div class="leading-tight">
+          <p class="font-semibold">漁人碼頭足球場</p>
+          <p class="text-xs text-slate-600">Fisherman’s Wharf Football Stadium</p>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm">
+        <a href="#about" class="hover:text-slate-600">關於</a>
+        <a href="#pricing" class="hover:text-slate-600">價目</a>
+        <a href="#booking" class="hover:text-slate-600">預約</a>
+        <a href="#contact" class="hover:text-slate-600">聯絡</a>
+      </nav>
+      <a href="#booking" class="rounded-full px-4 py-2 bg-black text-white text-sm hover:opacity-90">預約場地</a>
+    </div>
+  </header>
 
-    const form = document.getElementById("booking-form");
-    const message = document.getElementById("message");
-    const bookingList = document.getElementById("booking-list");
+  <!-- Hero -->
+  <section class="relative rad">
+    <div class="max-w-7xl mx-auto px-5 py-16 md:py-24 grid md:grid-cols-12 gap-10 items-center">
+      <div class="md:col-span-7">
+        <h1 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.08]">
+          足球場 🏟️  人造草地 🌱  歡迎租場 🤝
+        </h1>
+        <p class="mt-5 text-lg text-slate-700 leading-7">
+          澳門漁人碼頭足球場（<b>50×30 m</b>）多功能運動草地，開放時間 <b>09:00–22:00</b>。線上預約即時檢查，避免重覆時段。
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#booking" class="rounded-full px-6 py-3 bg-black text-white hover:opacity-90">立即預約</a>
+          <a href="#pricing" class="rounded-full px-6 py-3 border border-slate-300 hover:bg-slate-50">查看價目</a>
+        </div>
+        <div class="mt-6 grid grid-cols-3 gap-4 text-sm">
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">尺寸</p><p class="font-medium">50×30 m</p></div>
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">材質</p><p class="font-medium">人造草地</p></div>
+          <div class="rounded-xl border border-slate-200 p-4"><p class="text-slate-500">時間</p><p class="font-medium">09:00–22:00</p></div>
+        </div>
+      </div>
+      <div class="md:col-span-5">
+        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm p-6">
+          <img src="assets/logo.png" class="mx-auto max-h-60 object-contain" alt="FWFS logo"/>
+          <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-xl bg-violet-50 text-violet-700 border border-violet-200 p-3">周一–五：MOP 500/hr <span class="opacity-60">(8折 400)</span></div>
+            <div class="rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 p-3">週末/假：MOP 600/hr <span class="opacity-60">(8折 480)</span></div>
+            <div class="rounded-xl bg-slate-50 text-slate-700 border border-slate-200 p-3 col-span-2">夜間 18–22：MOP 800/hr <span class="opacity-60">(8折 640)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    // 載入現有預約
-    async function loadBookings() {
-      const { data, error } = await supabaseClient.from("bookings").select("*").order("date", { ascending: true });
-      bookingList.innerHTML = "";
-      if (data) {
-        data.forEach(b => {
-          const li = document.createElement("li");
-          li.textContent = `${b.date} ${b.start_time} - ${b.end_time} ｜ ${b.name} (${b.phone})`;
-          li.className = "p-2 bg-gray-50 border rounded";
-          bookingList.appendChild(li);
-        });
-      }
+  <!-- 價目 -->
+  <section id="pricing" class="max-w-7xl mx-auto px-5 py-16">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-semibold">價目表</h2>
+      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">8 折優惠</span>
+    </div>
+    <div class="mt-6 grid md:grid-cols-2 gap-6 items-start">
+      <div class="rounded-2xl bg-white p-2 border border-slate-200">
+        <img src="assets/price-list.jpg" alt="價目表" class="rounded-xl w-full object-contain"/>
+      </div>
+      <div class="rounded-2xl bg-white p-6 border border-slate-200">
+        <ul class="text-slate-700 space-y-2">
+          <li>星期一至五：MOP 500 / hr（8 折 → MOP 400）</li>
+          <li>週末及公眾假期：MOP 600 / hr（8 折 → MOP 480）</li>
+          <li>夜間 18:00–22:00：MOP 800 / hr（8 折 → MOP 640）</li>
+        </ul>
+        <div class="mt-4 text-sm text-slate-500">* 以上價格僅示意，可在頁面底部 JS 區塊調整。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 預約 -->
+  <section id="booking" class="max-w-7xl mx-auto px-5 py-16">
+    <h2 class="text-2xl font-semibold">線上預約</h2>
+    <p class="mt-2 text-slate-600">選擇日期與時段（整點、1–2 小時）。系統會即時檢查並避免重覆。</p>
+
+    <div class="mt-6 grid md:grid-cols-3 gap-6">
+      <!-- 日期 & 時段 -->
+      <div class="md:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+        <div class="flex items-center gap-3">
+          <label class="text-sm text-slate-600">日期</label>
+          <input id="date" type="date" class="rounded-xl border border-slate-300 px-3 py-2">
+          <label class="ml-4 text-sm text-slate-600">時長</label>
+          <select id="duration" class="rounded-xl border border-slate-300 px-3 py-2">
+            <option value="1">1 小時</option>
+            <option value="2">2 小時</option>
+          </select>
+          <div class="ml-auto text-sm text-slate-600">總價：<span id="totalPrice" class="font-semibold">—</span></div>
+        </div>
+        <div class="mt-4 grid grid-cols-2 md:grid-cols-6 gap-2" id="slots"></div>
+        <p class="mt-3 text-xs text-slate-500">灰色時段為已被預約或不合法的組合（超出 22:00）。</p>
+      </div>
+
+      <!-- 表單 -->
+      <form id="bookingForm" class="rounded-2xl bg-white border border-slate-200 p-6 space-y-3">
+        <div>
+          <label class="text-sm text-slate-600">開始時間</label>
+          <input id="start_time" class="w-full rounded-xl border border-slate-300 px-3 py-2" type="time" step="3600" required />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-slate-600">聯絡人</label>
+            <input id="name" class="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="你的名字" required />
+          </div>
+          <div>
+            <label class="text-sm text-slate-600">電話</label>
+            <input id="phone" class="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="+853 ..." required />
+          </div>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">備註</label>
+          <textarea id="notes" class="w-full h-20 rounded-xl border border-slate-300 px-3 py-2" placeholder="人數 / 活動類型…"></textarea>
+        </div>
+        <button class="w-full rounded-full px-5 py-3 bg-black text-white hover:opacity-90">送出預約</button>
+        <p id="status" class="text-sm text-slate-600"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 圖片／相簿位（可換 hero.jpg） -->
+  <section id="about" class="max-w-7xl mx-auto px-5 pb-6">
+    <div class="rounded-2xl overflow-hidden border border-slate-200">
+      <img src="assets/hero.jpg" alt="Stadium" onerror="this.src='assets/price-list.jpg'" class="w-full object-cover max-h-[480px]"/>
+    </div>
+  </section>
+
+  <!-- 聯絡 -->
+  <section id="contact" class="max-w-7xl mx-auto px-5 py-16">
+    <div class="rounded-2xl bg-white border border-slate-200 p-6 grid md:grid-cols-2 gap-6">
+      <div>
+        <h2 class="text-2xl font-semibold">聯絡我們</h2>
+        <ul class="mt-4 text-slate-700 space-y-2">
+          <li>📞 租場熱線：<a href="tel:+85368021668" class="underline">+853 68021668</a></li>
+          <li>🕘 開放時間：09:00–22:00</li>
+          <li>📍 Fisherman’s Wharf Football Stadium, Macau</li>
+        </ul>
+      </div>
+      <div class="rounded-xl border border-slate-200 p-4">
+        <iframe class="w-full h-64 rounded-lg" loading="lazy" allowfullscreen src="https://www.openstreetmap.org/export/embed.html?bbox=113.538%2C22.187%2C113.544%2C22.194&layer=mapnik"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-5 py-10 text-sm text-slate-500 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+      <p>© <span id="year"></span> Fisherman’s Wharf Football Stadium</p>
+      <div class="flex items-center gap-3">
+        <a href="#booking" class="hover:opacity-80">立即預約</a>
+        <a href="admin.html" class="hover:opacity-80">管理</a>
+      </div>
+    </div>
+  </footer>
+
+<script>
+/** ====== 可調參數 ====== **/
+const SUPABASE_URL = "https://cbebpuqfkprhamwsbhdb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g";
+const OPEN_HOUR = 9, CLOSE_HOUR = 22; // 整點
+const WEEKDAY_RATE = 500, WEEKEND_RATE = 600, NIGHT_RATE = 800; // 每小時
+const DISCOUNT = 0.8; // 8折
+const NIGHT_FROM = 18; // 夜間起
+
+/** ====== 初始化 ====== **/
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+document.getElementById('year').textContent = new Date().getFullYear();
+const dateEl = document.getElementById('date');
+const durationEl = document.getElementById('duration');
+const totalPriceEl = document.getElementById('totalPrice');
+const slotsEl = document.getElementById('slots');
+const startInput = document.getElementById('start_time');
+const form = document.getElementById('bookingForm');
+const statusEl = document.getElementById('status');
+
+// 預設日期：今天
+dateEl.value = new Date().toISOString().slice(0,10);
+renderSlots();
+calcPrice();
+dateEl.addEventListener('change', ()=>{ renderSlots(); calcPrice(); });
+durationEl.addEventListener('change', ()=>{ renderSlots(); calcPrice(); });
+
+/** ====== 價格計算 ====== **/
+function isWeekend(isoDate){
+  const d = new Date(isoDate); const day = d.getDay(); // 0 Sun, 6 Sat
+  return day===0 || day===6;
+}
+function calcPrice(){
+  const dur = +durationEl.value;
+  const base = isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE;
+  totalPriceEl.textContent = `MOP ${Math.round(base * dur * DISCOUNT)}`;
+}
+
+/** ====== 時段渲染（避免重疊） ====== **/
+function pad(n){ return String(n).padStart(2,'0'); }
+function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+function overlap(aS,aE,bS,bE){ return aS < bE && bS < aE; } // [start, end)
+
+async function getBookingsByDate(isoDate){
+  const { data, error } = await sb.from('bookings')
+    .select('start_time,end_time')
+    .eq('date', isoDate);
+  if (error) { console.error(error); return []; }
+  return data||[];
+}
+
+async function renderSlots(){
+  slotsEl.innerHTML = '';
+  const iso = dateEl.value;
+  const dur = +durationEl.value;
+  const existing = await getBookingsByDate(iso);
+  const occupied = existing.map(b => [toMin(b.start_time), toMin(b.end_time)]);
+
+  for (let h = OPEN_HOUR; h <= CLOSE_HOUR - 1; h++){
+    const start = `${pad(h)}:00`;
+    const endHour = h + dur;
+    const end = `${pad(endHour)}:00`;
+    const illegal = endHour > CLOSE_HOUR;
+    const startM = h*60, endM = endHour*60;
+    const blocked = occupied.some(([s,e]) => overlap(startM, endM, s, e));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = `${start}–${end}`;
+    btn.className = "px-3 py-2 rounded-full border text-sm " +
+      (illegal || blocked ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          : "hover:bg-black hover:text-white");
+    btn.disabled = illegal || blocked;
+    if (!btn.disabled){
+      btn.onclick = ()=>{
+        startInput.value = start;
+        Array.from(slotsEl.children).forEach(x=>x.classList.remove('ring-accent'));
+        btn.classList.add('ring-accent');
+      };
     }
-    loadBookings();
+    slotsEl.appendChild(btn);
+  }
+}
 
-    // 表單送出
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("name").value;
-      const phone = document.getElementById("phone").value;
-      const date = document.getElementById("date").value;
-      const [start_time, end_time] = document.getElementById("time").value.split("-");
+// Realtime：當天有人新預約 → 重新渲染
+sb.channel('bookings-realtime')
+  .on('postgres_changes',{event:'*',schema:'public',table:'bookings'},(payload)=>{
+    if (dateEl.value) renderSlots();
+  })
+  .subscribe();
 
-      // 檢查是否已被預約
-      const { data: existing } = await supabaseClient.from("bookings")
-        .select("*")
-        .eq("date", date)
-        .eq("start_time", start_time)
-        .eq("end_time", end_time);
+/** ====== 送出預約（再次檢查重疊） ====== **/
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  statusEl.textContent = "檢查時段中…";
+  const dur = +durationEl.value;
+  const start = startInput.value;
+  const endHour = parseInt(start.slice(0,2),10) + dur;
+  const end = `${pad(endHour)}:00`;
+  const payload = {
+    date: dateEl.value,
+    start_time: start + ':00'.slice(start.length-2), // 保證 HH:MM:SS
+    end_time: end + ':00'.slice(end.length-2),
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    notes: document.getElementById('notes').value.trim()
+  };
+  // 最終重疊檢查
+  const existing = await getBookingsByDate(payload.date);
+  const reqS = toMin(payload.start_time), reqE = toMin(payload.end_time);
+  const conflict = existing.some(b => overlap(reqS, reqE, toMin(b.start_time), toMin(b.end_time)));
+  if (conflict){ statusEl.textContent = "此時段已被預約，請換一個時段。"; await renderSlots(); return; }
 
-      if (existing.length > 0) {
-        message.textContent = "⚠️ 這個時段已經被預約，請選擇其他時間。";
-        message.className = "mt-4 text-center text-red-600 font-bold";
-        return;
-      }
-
-      // 插入新預約
-      const { error } = await supabaseClient.from("bookings").insert([{ name, phone, date, start_time, end_time }]);
-      if (error) {
-        message.textContent = "❌ 預約失敗，請稍後再試。";
-        message.className = "mt-4 text-center text-red-600 font-bold";
-      } else {
-        message.textContent = "✅ 預約成功！";
-        message.className = "mt-4 text-center text-green-600 font-bold";
-        form.reset();
-        loadBookings();
-      }
-    });
-  </script>
+  // Insert
+  try{
+    const { error } = await sb.from('bookings').insert(payload);
+    if (error) throw error;
+    statusEl.textContent = "✅ 預約成功！我們會盡快與你聯絡。";
+    statusEl.className = "text-sm text-green-600";
+    form.reset();
+    renderSlots();
+  }catch(err){
+    statusEl.textContent = "❌ 預約失敗：" + (err.message||err);
+    statusEl.className = "text-sm text-red-600";
+  }
+});
+</script>
 </body>
 </html>
+
