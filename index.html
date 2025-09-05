@@ -219,10 +219,27 @@ function isWeekend(isoDate){
   const d = new Date(isoDate); const day = d.getDay(); // 0 Sun, 6 Sat
   return day===0 || day===6;
 }
-function calcPrice(){
-  const dur = +durationEl.value;
-  const base = isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE;
-  totalPriceEl.textContent = `MOP ${Math.round(base * dur * DISCOUNT)}`;
+function calcPrice() {
+  const dur       = parseInt(durationEl.value);                  // 時長
+  const startHour = parseInt(startInput.value.split(':')[0]);    // 取開始的「時」(00–23)
+
+  // 判斷使用哪個費率：夜間 > 週末 > 平日
+  let baseRate;
+  if (startHour >= NIGHT_FROM) {
+    baseRate = NIGHT_RATE;
+  } else {
+    baseRate = isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE;
+  }
+
+  // 計算總價
+  let total = baseRate * dur;
+
+  // 平日白天給 8 折優惠
+  if (startHour < NIGHT_FROM && !isWeekend(dateEl.value)) {
+    total = total * DISCOUNT;
+  }
+
+  totalPriceEl.textContent = `MOP ${total}`;
 }
 
 /** ====== 時段渲染（避免重疊） ====== **/
@@ -245,7 +262,10 @@ async function renderSlots(){
   const existing = await getBookingsByDate(iso);
   const occupied = existing.map(b => [toMin(b.start_time), toMin(b.end_time)]);
 
-  for (let h = OPEN_HOUR; h <= CLOSE_HOUR - 1; h++){
+const duration = parseInt(durationEl.value);
+for (let h = OPEN_HOUR; h + duration <= CLOSE_HOUR; h++) {
+  // 動態生成 `${h}:00–${h+duration}:00` 的按鈕
+}
     const start = `${pad(h)}:00`;
     const endHour = h + dur;
     const end = `${pad(endHour)}:00`;
