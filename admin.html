@@ -3,19 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>預約後台｜漁人碼頭足球場</title>
+    <title>預約後台｜KANG WEI Medical</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS CDN -->
-    <script src="https://esm.sh/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-      .chip { @apply inline-block rounded-full bg-slate-100 text-slate-700 text-xs px-2 py-0.5 mr-1; }
-      .btn  { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium shadow-sm transition bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-40; }
-      .btn-ghost { @apply bg-transparent text-slate-700 hover:bg-slate-100; }
-      .btn-danger{ @apply bg-rose-600 hover:bg-rose-700; }
-      .card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-      .input{ @apply w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400; }
-      .select{ @apply input pr-8; }
-      .hidden { display: none; }
+      .chip { display:inline-block; border-radius:9999px; background:#f1f5f9; color:#334155; font-size:12px; padding:2px 8px; margin-right:4px; }
+      .btn  { display:inline-flex; align-items:center; gap:8px; border-radius:12px; padding:8px 12px; font-size:14px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.05); background:#0f172a; color:#fff; transition:.15s; }
+      .btn:hover { background:#1e293b; }
+      .btn-ghost { background:transparent; color:#334155; }
+      .btn-ghost:hover { background:#f1f5f9; }
+      .btn-danger { background:#e11d48; }
+      .btn-danger:hover { background:#be123c; }
+      .card { border-radius:16px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+      .input{ width:100%; border-radius:12px; border:1px solid #cbd5e1; padding:8px 12px; font-size:14px; outline:none; }
+      .input:focus{ box-shadow:0 0 0 2px #cbd5e1; }
+      .select{ width:100%; border-radius:12px; border:1px solid #cbd5e1; padding:8px 12px; font-size:14px; }
+      .hidden { display:none; }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-900">
@@ -102,10 +106,9 @@
     </div>
 
     <script>
-      // === ⚙️ 請替換成你的 Supabase 專案資訊（GitHub Pages 直接寫常數即可） ===
-      const SUPABASE_URL = "https://cbebpuqfkprhamwsbhdb.supabase.co"; // ← 改成你的
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g"; // ← 改成你的（不要放 service_role）
-
+      // === Supabase 初始化（使用你的 URL 與 anon key） ===
+      const SUPABASE_URL = "https://cbebpuqfkprhamwsbhdb.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g";
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       // UI refs
@@ -139,7 +142,7 @@
       // ======= Auth =======
       init();
       async function init(){
-        const { data: { session } } = await sb.auth.getSession();
+        const {{ data: {{ session }} }} = await sb.auth.getSession();
         if (session) return showDashboard(session);
         showSignIn();
       }
@@ -148,7 +151,7 @@
         e.preventDefault();
         const email = document.getElementById('email').value.trim();
         if (!email) return;
-        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+        const {{ error }} = await sb.auth.signInWithOtp({{ email, options: {{ emailRedirectTo: location.href }} }});
         if (error) return alert(error.message);
         loginTip.classList.remove('hidden');
       });
@@ -159,9 +162,9 @@
       });
 
       async function isAdmin(){
-        const { data: { user } } = await sb.auth.getUser();
+        const {{ data: {{ user }} }} = await sb.auth.getUser();
         if (!user) return false;
-        const { data, error } = await sb.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+        const {{ data, error }} = await sb.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
         return !!data && !error;
       }
 
@@ -199,43 +202,43 @@
       }
 
       async function load(){
-        let q = sb.from('bookings').select('*', { count: 'exact' });
+        let q = sb.from('bookings').select('*', {{ count: 'exact' }});
         const day = filterDate.value?.trim();
         const kw = filterQuery.value?.trim();
         if (day) q = q.eq('date', day);
-        if (kw) q = q.or(`name.ilike.%${kw}%,phone.ilike.%${kw}%,notes.ilike.%${kw}%`);
+        if (kw) q = q.or(`name.ilike.%${{kw}}%,phone.ilike.%${{kw}}%,notes.ilike.%${{kw}}%`);
         const [col, dir] = (sortBy.value||'date-asc').split('-');
         const asc = dir === 'asc';
-        q = q.order('date', { ascending: asc }).order('start_time', { ascending: asc });
+        q = q.order('date', {{ ascending: asc }}).order('start_time', {{ ascending: asc }});
         const from = (currentPage-1)*PAGE_SIZE; const to = from+PAGE_SIZE-1;
         q = q.range(from, to);
-        const { data, count, error } = await q;
+        const {{ data, count, error }} = await q;
         if (error){ console.error(error); alert(error.message); return; }
         totalCount = count ?? 0; currentRows = data ?? [];
         render(currentRows);
         const maxPage = Math.max(1, Math.ceil((totalCount||0)/PAGE_SIZE));
-        pageInfo.textContent = `第 ${currentPage} / ${maxPage} 頁（共 ${totalCount||0} 筆）`;
+        pageInfo.textContent = '第 ' + currentPage + ' / ' + maxPage + ' 頁（共 ' + (totalCount||0) + ' 筆）';
         tip.classList.toggle('hidden', !(day||kw));
       }
 
       function render(rows){
         tbody.innerHTML = '';
         if (!rows || !rows.length){
-          tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500">沒有資料</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-500">沒有資料</td></tr>';
           return;
         }
         for (const r of rows){
           const tr = document.createElement('tr');
           tr.className = 'border-t border-slate-100';
-          tr.innerHTML = `
-            <td class="py-2 px-3">${esc(r.date)}</td>
-            <td class="py-2 px-3">${esc(r.start_time)}</td>
-            <td class="py-2 px-3">${esc(r.end_time)}</td>
-            <td class="py-2 px-3">${esc(r.name)}</td>
-            <td class="py-2 px-3">${esc(r.phone)}</td>
-            <td class="py-2 px-3">${esc(r.notes||'')}</td>
-            <td class="py-2 px-3">${esc(formatDateTime(r.created_at))}</td>
-            <td class="py-2 px-3 text-right"><button class="btn btn-danger" data-id="${r.id}" data-name="${esc(r.name)}">刪除</button></td>`;
+          tr.innerHTML = ''
+            + '<td class="py-2 px-3">' + esc(r.date) + '</td>'
+            + '<td class="py-2 px-3">' + esc(r.start_time) + '</td>'
+            + '<td class="py-2 px-3">' + esc(r.end_time) + '</td>'
+            + '<td class="py-2 px-3">' + esc(r.name) + '</td>'
+            + '<td class="py-2 px-3">' + esc(r.phone) + '</td>'
+            + '<td class="py-2 px-3">' + esc(r.notes||'') + '</td>'
+            + '<td class="py-2 px-3">' + esc(formatDateTime(r.created_at)) + '</td>'
+            + '<td class="py-2 px-3 text-right"><button class="btn btn-danger" data-id="' + r.id + '" data-name="' + esc(r.name) + '">刪除</button></td>';
           tbody.appendChild(tr);
         }
         // bind delete
@@ -243,7 +246,7 @@
           btn.addEventListener('click', ()=>{
             pendingDeleteId = btn.getAttribute('data-id');
             const nm = btn.getAttribute('data-name')||'';
-            modalText.textContent = `確定要刪除預約：${nm}？`;
+            modalText.textContent = '確定要刪除預約：' + nm + '？';
             modal.classList.remove('hidden');
           });
         });
@@ -260,16 +263,12 @@
       // ======= Realtime =======
       function subscribeRealtime(){
         sb.channel('bookings-feed')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload)=>{
-            // 簡單策略：變更時重新載入當前頁
-            load();
-          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload)=>{ load(); })
           .subscribe();
       }
 
       // ======= Export CSV（依目前篩選抓全部） =======
       async function exportCsv(){
-        // 重新以相同條件抓最多 10k 筆
         let q = sb.from('bookings').select('*');
         const day = filterDate.value?.trim();
         const kw = filterQuery.value?.trim();
@@ -285,7 +284,7 @@
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `bookings-${new Date().toISOString().slice(0,10)}.csv`;
+        a.href = url; a.download = 'bookings-' + new Date().toISOString().slice(0,10) + '.csv';
         document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
       }
 
@@ -297,7 +296,7 @@
         if (/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
         return s;
       }
-      function formatDateTime(iso){ try{ const d=new Date(iso); if(!iso||isNaN(d)) return ''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` }catch{ return ''} }
+      function formatDateTime(iso){ try{ const d=new Date(iso); if(!iso||isNaN(d)) return ''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') }catch{ return ''} }
       function debounce(fn,ms){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; }
     </script>
   </body>
