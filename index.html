@@ -119,6 +119,8 @@
           <select id="duration" class="rounded-xl border border-slate-300 px-3 py-2">
             <option value="1">1 小時</option>
             <option value="2">2 小時</option>
+            <option value="3">3 小時</option>
+            <option value="4">4 小時</option>
           </select>
           <div class="ml-auto text-sm text-slate-600">總價：<span id="totalPrice" class="font-semibold">—</span></div>
         </div>
@@ -256,22 +258,25 @@ async function getBookingsByDate(isoDate){
 }
 
 async function renderSlots(){
+  // 清空原有按鈕
   slotsEl.innerHTML = '';
   const iso = dateEl.value;
-  const dur = +durationEl.value;
+  const duration = parseInt(durationEl.value);
+  // 取得當天已有預約的時段
   const existing = await getBookingsByDate(iso);
   const occupied = existing.map(b => [toMin(b.start_time), toMin(b.end_time)]);
 
-const duration = parseInt(durationEl.value);
-for (let h = OPEN_HOUR; h + duration <= CLOSE_HOUR; h++) {
-  // 動態生成 `${h}:00–${h+duration}:00` 的按鈕
-}
+  // 依照選擇的時長產生所有合法時段
+  for (let h = OPEN_HOUR; h + duration <= CLOSE_HOUR; h++) {
     const start = `${pad(h)}:00`;
-    const endHour = h + dur;
+    const endHour = h + duration;
     const end = `${pad(endHour)}:00`;
+    const startM = h * 60;
+    const endM = endHour * 60;
+    // 判斷是否超出營業時間或與已有預約衝突
     const illegal = endHour > CLOSE_HOUR;
-    const startM = h*60, endM = endHour*60;
     const blocked = occupied.some(([s,e]) => overlap(startM, endM, s, e));
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = `${start}–${end}`;
@@ -279,11 +284,14 @@ for (let h = OPEN_HOUR; h + duration <= CLOSE_HOUR; h++) {
       (illegal || blocked ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                           : "hover:bg-black hover:text-white");
     btn.disabled = illegal || blocked;
-    if (!btn.disabled){
-      btn.onclick = ()=>{
+
+    if (!btn.disabled) {
+      btn.onclick = () => {
         startInput.value = start;
-        Array.from(slotsEl.children).forEach(x=>x.classList.remove('ring-accent'));
+        // 高亮當前選擇並計算價格
+        Array.from(slotsEl.children).forEach(x => x.classList.remove('ring-accent'));
         btn.classList.add('ring-accent');
+        calcPrice();
       };
     }
     slotsEl.appendChild(btn);
