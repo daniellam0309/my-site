@@ -1,303 +1,97 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>預約後台｜KANG WEI Medical</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-      .chip { display:inline-block; border-radius:9999px; background:#f1f5f9; color:#334155; font-size:12px; padding:2px 8px; margin-right:4px; }
-      .btn  { display:inline-flex; align-items:center; gap:8px; border-radius:12px; padding:8px 12px; font-size:14px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.05); background:#0f172a; color:#fff; transition:.15s; }
-      .btn:hover { background:#1e293b; }
-      .btn-ghost { background:transparent; color:#334155; }
-      .btn-ghost:hover { background:#f1f5f9; }
-      .btn-danger { background:#e11d48; }
-      .btn-danger:hover { background:#be123c; }
-      .card { border-radius:16px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-      .input{ width:100%; border-radius:12px; border:1px solid #cbd5e1; padding:8px 12px; font-size:14px; outline:none; }
-      .input:focus{ box-shadow:0 0 0 2px #cbd5e1; }
-      .select{ width:100%; border-radius:12px; border:1px solid #cbd5e1; padding:8px 12px; font-size:14px; }
-      .hidden { display:none; }
-    </style>
-  </head>
-  <body class="bg-slate-50 text-slate-900">
-    <header class="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">預約管理後台</h1>
-      <div class="flex items-center gap-3">
-        <span id="whoami" class="chip hidden"></span>
-        <button id="btnSignOut" class="btn btn-ghost hidden">登出</button>
-      </div>
-    </header>
-
-    <!-- Sign in view -->
-    <main id="viewSignIn" class="max-w-md mx-auto p-6 card">
-      <h2 class="text-xl font-semibold mb-4">管理員登入</h2>
-      <p class="text-sm text-slate-600 mb-4">使用 Email 登入，我們會寄送一次性登入連結。</p>
-      <form id="formLogin" class="space-y-3">
-        <input id="email" type="email" required placeholder="admin@example.com" class="input" />
-        <button class="btn w-full" type="submit">以 Email 登入</button>
-      </form>
-      <p id="loginTip" class="text-sm text-emerald-700 mt-4 hidden">已寄送登入連結，請至信箱開啟。</p>
-    </main>
-
-    <!-- Dashboard view -->
-    <section id="viewDashboard" class="max-w-6xl mx-auto px-4 pb-24 hidden">
-      <div class="card p-4 mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-        <div class="md:col-span-3">
-          <label class="text-xs text-slate-500">日期</label>
-          <input id="filterDate" type="date" class="input" />
-        </div>
-        <div class="md:col-span-4">
-          <label class="text-xs text-slate-500">搜尋（姓名/電話/備註）</label>
-          <input id="filterQuery" type="text" class="input" placeholder="輸入關鍵字…" />
-        </div>
-        <div class="md:col-span-3">
-          <label class="text-xs text-slate-500">排序</label>
-          <select id="sortBy" class="select">
-            <option value="date-asc">日期 ↑</option>
-            <option value="date-desc">日期 ↓</option>
-          </select>
-        </div>
-        <div class="md:col-span-2 flex gap-2">
-          <button id="btnExport" class="btn w-full" title="匯出目前篩選結果">匯出 CSV</button>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between mb-2">
-        <p id="tip" class="text-sm text-slate-500 hidden">已套用篩選/搜尋</p>
-        <div class="flex items-center gap-2">
-          <button id="btnPrev" class="btn btn-ghost">上一頁</button>
-          <span id="pageInfo" class="text-sm text-slate-600"></span>
-          <button id="btnNext" class="btn btn-ghost">下一頁</button>
-        </div>
-      </div>
-
-      <div class="card overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="py-2 px-3 text-left">日期</th>
-              <th class="py-2 px-3 text-left">開始</th>
-              <th class="py-2 px-3 text-left">結束</th>
-              <th class="py-2 px-3 text-left">姓名</th>
-              <th class="py-2 px-3 text-left">電話</th>
-              <th class="py-2 px-3 text-left">備註</th>
-              <th class="py-2 px-3 text-left">建立時間</th>
-              <th class="py-2 px-3 text-left w-24"></th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Delete modal -->
-    <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center">
-      <div class="card max-w-md w-[92%] p-5">
-        <h3 class="text-lg font-semibold mb-2">確認刪除</h3>
-        <p id="modalText" class="text-sm text-slate-600 mb-4"></p>
-        <div class="flex justify-end gap-2">
-          <button id="btnCancel" class="btn btn-ghost">取消</button>
-          <button id="btnConfirm" class="btn btn-danger">刪除</button>
-        </div>
-      </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>預約後台 (Email+Password)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <main class="max-w-lg mx-auto mt-10 p-6 bg-white rounded-xl shadow">
+    <div class="flex gap-2 mb-4">
+      <button id="tabSignIn" class="px-4 py-2 bg-purple-600 text-white rounded">登入</button>
+      <button id="tabSignUp" class="px-4 py-2 bg-gray-200 text-gray-700 rounded">註冊</button>
     </div>
 
-    <script>
-      // === Supabase 初始化（使用你的 URL 與 anon key） ===
-      const SUPABASE_URL = "https://cbebpuqfkprhamwsbhdb.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g";
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Sign In -->
+    <form id="formSignIn" class="space-y-3">
+      <input id="inEmail" type="email" placeholder="Email" required class="w-full border p-2 rounded" />
+      <input id="inPass" type="password" placeholder="密碼" required class="w-full border p-2 rounded" />
+      <button class="w-full bg-purple-600 text-white p-2 rounded">登入</button>
+    </form>
 
-      // UI refs
-      const viewSignIn = document.getElementById('viewSignIn');
-      const viewDashboard = document.getElementById('viewDashboard');
-      const whoami = document.getElementById('whoami');
-      const btnSignOut = document.getElementById('btnSignOut');
-      const formLogin = document.getElementById('formLogin');
-      const loginTip = document.getElementById('loginTip');
+    <!-- Sign Up -->
+    <form id="formSignUp" class="space-y-3 hidden">
+      <input id="upEmail" type="email" placeholder="Email" required class="w-full border p-2 rounded" />
+      <input id="upPass" type="password" placeholder="密碼" required class="w-full border p-2 rounded" />
+      <button class="w-full bg-green-600 text-white p-2 rounded">註冊</button>
+    </form>
 
-      const filterDate = document.getElementById('filterDate');
-      const filterQuery = document.getElementById('filterQuery');
-      const sortBy = document.getElementById('sortBy');
-      const tbody = document.getElementById('tbody');
-      const btnExport = document.getElementById('btnExport');
-      const btnPrev = document.getElementById('btnPrev');
-      const btnNext = document.getElementById('btnNext');
-      const pageInfo = document.getElementById('pageInfo');
-      const tip = document.getElementById('tip');
+    <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+  </main>
 
-      const modal = document.getElementById('modal');
-      const modalText = document.getElementById('modalText');
-      const btnCancel = document.getElementById('btnCancel');
-      const btnConfirm = document.getElementById('btnConfirm');
+  <section id="dashboard" class="hidden max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
+    <h2 class="text-xl font-bold mb-4">歡迎進入後台</h2>
+    <p>這裡會顯示 bookings 管理表。</p>
+    <button id="btnSignOut" class="mt-4 px-4 py-2 bg-gray-200 rounded">登出</button>
+  </section>
 
-      // state
-      let currentPage = 1; const PAGE_SIZE = 100;
-      let totalCount = 0;  let currentRows = [];
-      let pendingDeleteId = null;
+  <script>
+    const supabase = window.supabase.createClient("https://cbebpuqfkprhamwsbhdb.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g");
 
-      // ======= Auth =======
-      init();
-      async function init(){
-        const {{ data: {{ session }} }} = await sb.auth.getSession();
-        if (session) return showDashboard(session);
-        showSignIn();
-      }
+    const tabSignIn = document.getElementById('tabSignIn');
+    const tabSignUp = document.getElementById('tabSignUp');
+    const formSignIn = document.getElementById('formSignIn');
+    const formSignUp = document.getElementById('formSignUp');
+    const authMsg = document.getElementById('authMsg');
+    const dashboard = document.getElementById('dashboard');
+    const btnSignOut = document.getElementById('btnSignOut');
 
-      formLogin?.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const email = document.getElementById('email').value.trim();
-        if (!email) return;
-        const {{ error }} = await sb.auth.signInWithOtp({{ email, options: {{ emailRedirectTo: location.href }} }});
-        if (error) return alert(error.message);
-        loginTip.classList.remove('hidden');
-      });
+    // 切換 tab
+    tabSignIn.onclick = () => {
+      formSignIn.classList.remove('hidden');
+      formSignUp.classList.add('hidden');
+      tabSignIn.className="px-4 py-2 bg-purple-600 text-white rounded";
+      tabSignUp.className="px-4 py-2 bg-gray-200 text-gray-700 rounded";
+    };
+    tabSignUp.onclick = () => {
+      formSignUp.classList.remove('hidden');
+      formSignIn.classList.add('hidden');
+      tabSignUp.className="px-4 py-2 bg-purple-600 text-white rounded";
+      tabSignIn.className="px-4 py-2 bg-gray-200 text-gray-700 rounded";
+    };
 
-      btnSignOut?.addEventListener('click', async ()=>{
-        await sb.auth.signOut();
-        location.reload();
-      });
+    // 登入
+    formSignIn.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('inEmail').value;
+      const password = document.getElementById('inPass').value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) authMsg.textContent = "登入失敗：" + error.message;
+      else showDashboard();
+    });
 
-      async function isAdmin(){
-        const {{ data: {{ user }} }} = await sb.auth.getUser();
-        if (!user) return false;
-        const {{ data, error }} = await sb.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
-        return !!data && !error;
-      }
+    // 註冊
+    formSignUp.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('upEmail').value;
+      const password = document.getElementById('upPass').value;
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) authMsg.textContent = "註冊失敗：" + error.message;
+      else authMsg.textContent = "註冊成功，請檢查 Email 確認信後再登入。";
+    });
 
-      async function showSignIn(){
-        viewDashboard.classList.add('hidden');
-        viewSignIn.classList.remove('hidden');
-      }
+    btnSignOut.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      dashboard.classList.add('hidden');
+      formSignIn.parentElement.classList.remove('hidden');
+    });
 
-      async function showDashboard(session){
-        if (!(await isAdmin())){
-          alert('此頁僅限管理員使用。');
-          await sb.auth.signOut();
-          return showSignIn();
-        }
-        viewSignIn.classList.add('hidden');
-        viewDashboard.classList.remove('hidden');
-        whoami.textContent = session.user?.email ?? '';
-        whoami.classList.remove('hidden');
-        btnSignOut.classList.remove('hidden');
-        attachHandlers();
-        await load();
-        subscribeRealtime();
-      }
-
-      // ======= Query & Render =======
-      function attachHandlers(){
-        filterDate.addEventListener('change', ()=>{ currentPage = 1; load(); });
-        filterQuery.addEventListener('input', debounce(()=>{ currentPage = 1; load(); }, 300));
-        sortBy.addEventListener('change', ()=>{ currentPage = 1; load(); });
-        btnPrev.addEventListener('click', ()=>{ if (currentPage>1){ currentPage--; load(); }});
-        btnNext.addEventListener('click', ()=>{ const maxPage = Math.ceil(totalCount / PAGE_SIZE)||1; if (currentPage<maxPage){ currentPage++; load(); }});
-        btnExport.addEventListener('click', exportCsv);
-        btnCancel.addEventListener('click', ()=>{ modal.classList.add('hidden'); pendingDeleteId=null;});
-        btnConfirm.addEventListener('click', doDelete);
-      }
-
-      async function load(){
-        let q = sb.from('bookings').select('*', {{ count: 'exact' }});
-        const day = filterDate.value?.trim();
-        const kw = filterQuery.value?.trim();
-        if (day) q = q.eq('date', day);
-        if (kw) q = q.or(`name.ilike.%${{kw}}%,phone.ilike.%${{kw}}%,notes.ilike.%${{kw}}%`);
-        const [col, dir] = (sortBy.value||'date-asc').split('-');
-        const asc = dir === 'asc';
-        q = q.order('date', {{ ascending: asc }}).order('start_time', {{ ascending: asc }});
-        const from = (currentPage-1)*PAGE_SIZE; const to = from+PAGE_SIZE-1;
-        q = q.range(from, to);
-        const {{ data, count, error }} = await q;
-        if (error){ console.error(error); alert(error.message); return; }
-        totalCount = count ?? 0; currentRows = data ?? [];
-        render(currentRows);
-        const maxPage = Math.max(1, Math.ceil((totalCount||0)/PAGE_SIZE));
-        pageInfo.textContent = '第 ' + currentPage + ' / ' + maxPage + ' 頁（共 ' + (totalCount||0) + ' 筆）';
-        tip.classList.toggle('hidden', !(day||kw));
-      }
-
-      function render(rows){
-        tbody.innerHTML = '';
-        if (!rows || !rows.length){
-          tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-500">沒有資料</td></tr>';
-          return;
-        }
-        for (const r of rows){
-          const tr = document.createElement('tr');
-          tr.className = 'border-t border-slate-100';
-          tr.innerHTML = ''
-            + '<td class="py-2 px-3">' + esc(r.date) + '</td>'
-            + '<td class="py-2 px-3">' + esc(r.start_time) + '</td>'
-            + '<td class="py-2 px-3">' + esc(r.end_time) + '</td>'
-            + '<td class="py-2 px-3">' + esc(r.name) + '</td>'
-            + '<td class="py-2 px-3">' + esc(r.phone) + '</td>'
-            + '<td class="py-2 px-3">' + esc(r.notes||'') + '</td>'
-            + '<td class="py-2 px-3">' + esc(formatDateTime(r.created_at)) + '</td>'
-            + '<td class="py-2 px-3 text-right"><button class="btn btn-danger" data-id="' + r.id + '" data-name="' + esc(r.name) + '">刪除</button></td>';
-          tbody.appendChild(tr);
-        }
-        // bind delete
-        tbody.querySelectorAll('button.btn-danger').forEach(btn=>{
-          btn.addEventListener('click', ()=>{
-            pendingDeleteId = btn.getAttribute('data-id');
-            const nm = btn.getAttribute('data-name')||'';
-            modalText.textContent = '確定要刪除預約：' + nm + '？';
-            modal.classList.remove('hidden');
-          });
-        });
-      }
-
-      async function doDelete(){
-        if (!pendingDeleteId) return;
-        const { error } = await sb.from('bookings').delete().eq('id', pendingDeleteId);
-        if (error){ alert(error.message); return; }
-        modal.classList.add('hidden');
-        await load();
-      }
-
-      // ======= Realtime =======
-      function subscribeRealtime(){
-        sb.channel('bookings-feed')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload)=>{ load(); })
-          .subscribe();
-      }
-
-      // ======= Export CSV（依目前篩選抓全部） =======
-      async function exportCsv(){
-        let q = sb.from('bookings').select('*');
-        const day = filterDate.value?.trim();
-        const kw = filterQuery.value?.trim();
-        if (day) q = q.eq('date', day);
-        if (kw) q = q.or(`name.ilike.%${kw}%,phone.ilike.%${kw}%,notes.ilike.%${kw}%`);
-        const { data, error } = await q.limit(10000);
-        if (error){ alert(error.message); return; }
-        const rows = data||[];
-        const headers = ['date','start_time','end_time','name','phone','notes','created_at'];
-        const csv = [headers.join(',')].concat(
-          rows.map(r=> headers.map(h=> csvEscape(r[h])).join(','))
-        ).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'bookings-' + new Date().toISOString().slice(0,10) + '.csv';
-        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      }
-
-      // ======= utils =======
-      function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
-      function csvEscape(v){
-        if (v===null||v===undefined) return '';
-        const s = String(v);
-        if (/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
-        return s;
-      }
-      function formatDateTime(iso){ try{ const d=new Date(iso); if(!iso||isNaN(d)) return ''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') }catch{ return ''} }
-      function debounce(fn,ms){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; }
-    </script>
-  </body>
+    function showDashboard() {
+      document.querySelector('main').classList.add('hidden');
+      dashboard.classList.remove('hidden');
+    }
+  </script>
+</body>
 </html>
