@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>預約後台（admins 白名單）</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
   <main class="mx-auto max-w-6xl px-4 py-8">
     <h1 class="text-xl font-semibold mb-4">預約管理後台</h1>
 
+    <!-- 登入/註冊 -->
     <section id="viewAuth" class="max-w-md bg-white shadow rounded-xl p-6">
       <div class="flex gap-2 mb-4">
         <button id="tabSignIn" class="px-3 py-2 rounded bg-violet-600 text-white">登入</button>
@@ -32,6 +33,7 @@
       <p id="authMsg" class="text-sm text-rose-600 mt-2"></p>
     </section>
 
+    <!-- Dashboard -->
     <section id="viewDashboard" class="hidden mt-8">
       <div class="bg-white shadow rounded-xl p-4">
         <div class="flex justify-between items-center">
@@ -60,6 +62,7 @@
     </section>
   </main>
 
+  <!-- 刪除確認 Modal -->
   <div id="modal" class="hidden fixed inset-0 bg-black/40 items-center justify-center">
     <div class="bg-white rounded-xl p-6 w-[90%] max-w-md">
       <h3 class="font-semibold mb-2">刪除預約</h3>
@@ -72,124 +75,205 @@
   </div>
 
   <script>
-    const sb = supabase.createClient('https://cbebpuqfkprhamwsbhdb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g');
+    // --- 檢查 supabase 是否載入 ---
+    if (!window.supabase) {
+      alert("Supabase SDK 載入失敗，請檢查 <script> 路徑！");
+    }
 
-    const viewAuth = document.getElementById('viewAuth');
-    const viewDashboard = document.getElementById('viewDashboard');
-    const authMsg = document.getElementById('authMsg');
-    const tabSignIn = document.getElementById('tabSignIn');
-    const tabSignUp = document.getElementById('tabSignUp');
-    const formSignIn = document.getElementById('formSignIn');
-    const formSignUp = document.getElementById('formSignUp');
-    const inEmail = document.getElementById('inEmail');
-    const inPass  = document.getElementById('inPass');
-    const upEmail = document.getElementById('upEmail');
-    const upPass  = document.getElementById('upPass');
-    const whoami  = document.getElementById('whoami');
-    const btnSignOut = document.getElementById('btnSignOut');
+    // --- 初始化 Supabase ---
+    const sb = supabase.createClient(
+      "https://YOUR_SUPABASE_URL.supabase.co",
+      "YOUR_SUPABASE_ANON_KEY"
+    );
 
-    const tbody = document.getElementById('tbody');
-    const empty = document.getElementById('empty');
+    // --- DOM 變數 ---
+    const viewAuth = document.getElementById("viewAuth");
+    const viewDashboard = document.getElementById("viewDashboard");
+    const authMsg = document.getElementById("authMsg");
+    const tabSignIn = document.getElementById("tabSignIn");
+    const tabSignUp = document.getElementById("tabSignUp");
+    const formSignIn = document.getElementById("formSignIn");
+    const formSignUp = document.getElementById("formSignUp");
+    const inEmail = document.getElementById("inEmail");
+    const inPass = document.getElementById("inPass");
+    const upEmail = document.getElementById("upEmail");
+    const upPass = document.getElementById("upPass");
+    const whoami = document.getElementById("whoami");
+    const btnSignOut = document.getElementById("btnSignOut");
 
-    const modal = document.getElementById('modal');
-    const btnCancelDel = document.getElementById('btnCancelDel');
-    const btnConfirmDel = document.getElementById('btnConfirmDel');
+    const tbody = document.getElementById("tbody");
+    const empty = document.getElementById("empty");
+
+    const modal = document.getElementById("modal");
+    const btnCancelDel = document.getElementById("btnCancelDel");
+    const btnConfirmDel = document.getElementById("btnConfirmDel");
     let pendingDeleteId = null;
 
+    // --- Tab 切換 ---
     tabSignIn.onclick = () => {
-      tabSignIn.className='px-3 py-2 rounded bg-violet-600 text-white';
-      tabSignUp.className='px-3 py-2 rounded border';
-      formSignIn.classList.remove('hidden'); formSignUp.classList.add('hidden'); authMsg.textContent='';
+      tabSignIn.className = "px-3 py-2 rounded bg-violet-600 text-white";
+      tabSignUp.className = "px-3 py-2 rounded border";
+      formSignIn.classList.remove("hidden");
+      formSignUp.classList.add("hidden");
+      authMsg.textContent = "";
     };
     tabSignUp.onclick = () => {
-      tabSignUp.className='px-3 py-2 rounded bg-violet-600 text-white';
-      tabSignIn.className='px-3 py-2 rounded border';
-      formSignUp.classList.remove('hidden'); formSignIn.classList.add('hidden'); authMsg.textContent='';
+      tabSignUp.className = "px-3 py-2 rounded bg-violet-600 text-white";
+      tabSignIn.className = "px-3 py-2 rounded border";
+      formSignUp.classList.remove("hidden");
+      formSignIn.classList.add("hidden");
+      authMsg.textContent = "";
     };
 
-    (async function init(){
-      const { data:{ session } } = await sb.auth.getSession();
+    // --- 初始化 session ---
+    (async function init() {
+      const { data: { session } } = await sb.auth.getSession();
       if (session) return ensureAdminThenShow(session);
       showAuth();
-      sb.auth.onAuthStateChange((_evt, sess) => { if (sess) ensureAdminThenShow(sess); });
+      sb.auth.onAuthStateChange((_evt, sess) => {
+        if (sess) ensureAdminThenShow(sess);
+      });
     })();
 
-    function showAuth(msg){
-      viewAuth.classList.remove('hidden');
-      viewDashboard.classList.add('hidden');
+    function showAuth(msg) {
+      viewAuth.classList.remove("hidden");
+      viewDashboard.classList.add("hidden");
       if (msg) authMsg.textContent = msg;
     }
-    async function ensureAdminThenShow(session){
-      try{
+
+    async function ensureAdminThenShow(session) {
+      try {
         const uid = session.user?.id;
-        const { data, error } = await sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle();
+        const { data, error } = await sb
+          .from("admins")
+          .select("user_id")
+          .eq("user_id", uid)
+          .maybeSingle();
         if (error) throw error;
-        if (!data){ await sb.auth.signOut(); return showAuth('這個帳號不在 admins 白名單，已登出。'); }
+        if (!data) {
+          await sb.auth.signOut();
+          return showAuth("這個帳號不在 admins 白名單，已登出。");
+        }
         showDashboard(session);
-      }catch(e){
+      } catch (e) {
         await sb.auth.signOut();
-        showAuth('無法驗證管理員資格：' + (e?.message || e));
+        showAuth("無法驗證管理員資格：" + (e?.message || e));
       }
     }
-    function showDashboard(session){
-      viewAuth.classList.add('hidden');
-      viewDashboard.classList.remove('hidden');
-      whoami.textContent = session.user?.email || '';
+
+    function showDashboard(session) {
+      viewAuth.classList.add("hidden");
+      viewDashboard.classList.remove("hidden");
+      whoami.textContent = session.user?.email || "";
       load();
-      sb.channel('bookings-feed').on('postgres_changes',{ event:'*', schema:'public', table:'bookings' }, () => load()).subscribe();
+      sb.channel("bookings-feed")
+        .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => load())
+        .subscribe();
     }
 
-    formSignUp.onsubmit = async (e)=>{
-      e.preventDefault(); authMsg.textContent='';
-      const email = upEmail.value.trim(); const password = upPass.value;
+    // --- 註冊 ---
+    formSignUp.onsubmit = async (e) => {
+      e.preventDefault();
+      authMsg.textContent = "";
+      const email = upEmail.value.trim();
+      const password = upPass.value;
       let { error } = await sb.auth.signUp({ email, password });
-      if (error) return authMsg.textContent = '註冊失敗：' + error.message;
+      if (error) {
+        authMsg.textContent = "註冊失敗：" + error.message;
+        console.error(error);
+        return;
+      }
       const res = await sb.auth.signInWithPassword({ email, password });
-      if (res.error) return authMsg.textContent = '登入失敗：' + res.error.message;
+      if (res.error) {
+        authMsg.textContent = "登入失敗：" + res.error.message;
+        console.error(res.error);
+      }
     };
-    formSignIn.onsubmit = async (e)=>{
-      e.preventDefault(); authMsg.textContent='';
-      const email = inEmail.value.trim(); const password = inPass.value;
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) return authMsg.textContent = '登入失敗：' + error.message;
-    };
-    btnSignOut.onclick = async ()=>{ await sb.auth.signOut(); showAuth(); };
 
-    async function load(){
-      const { data, error } = await sb.from('bookings').select('*').order('date', {ascending:true}).order('start_time',{ascending:true});
+    // --- 登入 ---
+    formSignIn.onsubmit = async (e) => {
+      e.preventDefault();
+      authMsg.textContent = "";
+      const email = inEmail.value.trim();
+      const password = inPass.value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        authMsg.textContent = "登入失敗：" + error.message;
+        console.error(error);
+      }
+    };
+
+    // --- 登出 ---
+    btnSignOut.onclick = async () => {
+      await sb.auth.signOut();
+      showAuth();
+    };
+
+    // --- 載入預約資料 ---
+    async function load() {
+      const { data, error } = await sb
+        .from("bookings")
+        .select("*")
+        .order("date", { ascending: true })
+        .order("start_time", { ascending: true });
       if (error) return console.error(error);
-      render(data||[]);
+      render(data || []);
     }
 
-    function render(rows){
-      tbody.innerHTML='';
-      if (!rows.length){ empty.classList.remove('hidden'); return; }
-      empty.classList.add('hidden');
-      for (const r of rows){
-        const tr = document.createElement('tr');
+    function render(rows) {
+      tbody.innerHTML = "";
+      if (!rows.length) {
+        empty.classList.remove("hidden");
+        return;
+      }
+      empty.classList.add("hidden");
+      for (const r of rows) {
+        const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="px-3 py-2">${r.date}</td>
           <td class="px-3 py-2"><span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">${r.start_time} – ${r.end_time}</span></td>
-          <td class="px-3 py-2">${esc(r.name||'')}</td>
-          <td class="px-3 py-2">${esc(r.phone||'')}</td>
-          <td class="px-3 py-2">${esc(r.notes||'')}</td>
+          <td class="px-3 py-2">${esc(r.name || "")}</td>
+          <td class="px-3 py-2">${esc(r.phone || "")}</td>
+          <td class="px-3 py-2">${esc(r.notes || "")}</td>
           <td class="px-3 py-2 text-gray-500">${fmt(r.created_at)}</td>
           <td class="px-3 py-2 text-right"><button data-id="${r.id}" class="px-3 py-1.5 rounded border text-rose-600">刪除</button></td>`;
-        tr.querySelector('button')?.addEventListener('click', ()=>{ pendingDeleteId=r.id; modal.classList.remove('hidden'); modal.classList.add('flex'); });
+        tr.querySelector("button")?.addEventListener("click", () => {
+          pendingDeleteId = r.id;
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        });
         tbody.appendChild(tr);
       }
     }
 
-    document.getElementById('btnCancelDel').onclick = ()=>{ pendingDeleteId=null; modal.classList.add('hidden'); modal.classList.remove('flex'); };
-    document.getElementById('btnConfirmDel').onclick = async ()=>{
+    // --- Modal ---
+    document.getElementById("btnCancelDel").onclick = () => {
+      pendingDeleteId = null;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+    document.getElementById("btnConfirmDel").onclick = async () => {
       if (!pendingDeleteId) return;
-      const { error } = await sb.from('bookings').delete().eq('id', pendingDeleteId);
-      pendingDeleteId=null; modal.classList.add('hidden'); modal.classList.remove('flex');
-      if (error) alert('刪除失敗：'+error.message); else load();
+      const { error } = await sb.from("bookings").delete().eq("id", pendingDeleteId);
+      pendingDeleteId = null;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      if (error) alert("刪除失敗：" + error.message);
+      else load();
     };
 
-    function esc(s){ return String(s).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c])); }
-    function fmt(iso){ if(!iso) return ''; const d=new Date(iso); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+    // --- 工具函式 ---
+    function esc(s) {
+      const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return String(s).replace(/[&<>"']/g, (c) => map[c]);
+    }
+    function fmt(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      const p = (n) => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+    }
   </script>
 </body>
 </html>
+
