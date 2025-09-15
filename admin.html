@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>預約後台（admins 白名單）</title>
+  <title>預約管理後台</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 改用 jsDelivr CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
@@ -27,7 +28,7 @@
       <form id="formSignUp" class="flex flex-col gap-3 hidden">
         <input id="upEmail" type="email" placeholder="you@example.com" class="border rounded px-3 py-2" required>
         <input id="upPass" type="password" placeholder="密碼（≥6 碼）" class="border rounded px-3 py-2" required>
-        <button class="px-3 py-2 rounded bg-violet-600 text-white w-full">建立帳號並直接登入</button>
+        <button class="px-3 py-2 rounded bg-violet-600 text-white w-full">建立帳號並登入</button>
       </form>
 
       <p id="authMsg" class="text-sm text-rose-600 mt-2"></p>
@@ -75,18 +76,13 @@
   </div>
 
   <script>
-    // --- 檢查 supabase 是否載入 ---
-    if (!window.supabase) {
-      alert("Supabase SDK 載入失敗，請檢查 <script> 路徑！");
-    }
-
     // --- 初始化 Supabase ---
     const sb = supabase.createClient(
-      "https://https://cbebpuqfkprhamwsbhdb.supabase.co",
+      "https://cbebpuqfkprhamwsbhdb.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNiZWJwdXFma3ByaGFtd3NiaGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjAxODYsImV4cCI6MjA3MjUzNjE4Nn0.GceaTOKGxBb8kCERfw9-k_KsPGnrA_8pXwBaYFar99g"
     );
 
-    // --- DOM 變數 ---
+    // DOM
     const viewAuth = document.getElementById("viewAuth");
     const viewDashboard = document.getElementById("viewDashboard");
     const authMsg = document.getElementById("authMsg");
@@ -103,13 +99,12 @@
 
     const tbody = document.getElementById("tbody");
     const empty = document.getElementById("empty");
-
     const modal = document.getElementById("modal");
     const btnCancelDel = document.getElementById("btnCancelDel");
     const btnConfirmDel = document.getElementById("btnConfirmDel");
     let pendingDeleteId = null;
 
-    // --- Tab 切換 ---
+    // Tab
     tabSignIn.onclick = () => {
       tabSignIn.className = "px-3 py-2 rounded bg-violet-600 text-white";
       tabSignUp.className = "px-3 py-2 rounded border";
@@ -125,7 +120,7 @@
       authMsg.textContent = "";
     };
 
-    // --- 初始化 session ---
+    // 初始化 session
     (async function init() {
       const { data: { session } } = await sb.auth.getSession();
       if (session) return ensureAdminThenShow(session);
@@ -156,6 +151,7 @@
         }
         showDashboard(session);
       } catch (e) {
+        console.error("白名單檢查失敗：", e);
         await sb.auth.signOut();
         showAuth("無法驗證管理員資格：" + (e?.message || e));
       }
@@ -171,7 +167,7 @@
         .subscribe();
     }
 
-    // --- 註冊 ---
+    // 註冊
     formSignUp.onsubmit = async (e) => {
       e.preventDefault();
       authMsg.textContent = "";
@@ -179,18 +175,18 @@
       const password = upPass.value;
       let { error } = await sb.auth.signUp({ email, password });
       if (error) {
+        console.error("註冊錯誤：", error);
         authMsg.textContent = "註冊失敗：" + error.message;
-        console.error(error);
         return;
       }
       const res = await sb.auth.signInWithPassword({ email, password });
       if (res.error) {
+        console.error("註冊後登入錯誤：", res.error);
         authMsg.textContent = "登入失敗：" + res.error.message;
-        console.error(res.error);
       }
     };
 
-    // --- 登入 ---
+    // 登入
     formSignIn.onsubmit = async (e) => {
       e.preventDefault();
       authMsg.textContent = "";
@@ -198,25 +194,25 @@
       const password = inPass.value;
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) {
+        console.error("登入錯誤：", error);
         authMsg.textContent = "登入失敗：" + error.message;
-        console.error(error);
       }
     };
 
-    // --- 登出 ---
+    // 登出
     btnSignOut.onclick = async () => {
       await sb.auth.signOut();
       showAuth();
     };
 
-    // --- 載入預約資料 ---
+    // 載入預約
     async function load() {
       const { data, error } = await sb
         .from("bookings")
         .select("*")
         .order("date", { ascending: true })
         .order("start_time", { ascending: true });
-      if (error) return console.error(error);
+      if (error) return console.error("讀取 bookings 錯誤：", error);
       render(data || []);
     }
 
@@ -246,13 +242,13 @@
       }
     }
 
-    // --- Modal ---
-    document.getElementById("btnCancelDel").onclick = () => {
+    // Modal
+    btnCancelDel.onclick = () => {
       pendingDeleteId = null;
       modal.classList.add("hidden");
       modal.classList.remove("flex");
     };
-    document.getElementById("btnConfirmDel").onclick = async () => {
+    btnConfirmDel.onclick = async () => {
       if (!pendingDeleteId) return;
       const { error } = await sb.from("bookings").delete().eq("id", pendingDeleteId);
       pendingDeleteId = null;
@@ -262,7 +258,7 @@
       else load();
     };
 
-    // --- 工具函式 ---
+    // 工具
     function esc(s) {
       const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
       return String(s).replace(/[&<>"']/g, (c) => map[c]);
@@ -276,4 +272,3 @@
   </script>
 </body>
 </html>
-
