@@ -232,43 +232,30 @@ function calcPrice() {
   let sum = 0;
   for (let i = 0; i < dur; i++) {
     const h = startHour + i;
-    if (h >= NIGHT_FROM) sum += NIGHT_RATE;
-    else sum += (isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE);
+    sum += (h >= NIGHT_FROM) ? NIGHT_RATE
+         : (isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE);
   }
-  const total = Math.round(sum * DISCOUNT);
-  totalPriceEl.textContent = `MOP ${total}`;
-} else {
-    baseRate = isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE;
-  }
-
-  // 計算總價
-  let total = baseRate * dur;
-
-  // 平日白天給 8 折優惠
-  if (startHour < NIGHT_FROM && !isWeekend(dateEl.value)) {
-    total = total * DISCOUNT;
-  }
-
+  const total = Math.round(sum * DISCOUNT); // 全部金額最後再套 8 折
   totalPriceEl.textContent = `MOP ${total}`;
 }
 
-/** ====== 時段渲染（避免重疊） ====== **/
+/** ====== 時段渲染（避免重疊） ====== **//** ====== 時段渲染（避免重疊） ====== **/
 function pad(n){ return String(n).padStart(2,'0'); }
 function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 function overlap(aS,aE,bS,bE){ return aS < bE && bS < aE; } // [start, end)
 
-async async function getBookingsByDate(isoDate){
+async function getBookingsByDate(isoDate){
   if (!sb) return [];
-  const { data, error } = await sb.from('bookings')
-    .select('start_time,end_time')
-    .eq('date', isoDate);
-  if (error) { console.error(error); return []; }
-  return data||[];
-} = await sb.from('bookings')
-    .select('start_time,end_time')
-    .eq('date', isoDate);
-  if (error) { console.error(error); return []; }
-  return data||[];
+  try {
+    const { data, error } = await sb.from('bookings')
+      .select('start_time,end_time')
+      .eq('date', isoDate);
+    if (error) { console.error(error); return []; }
+    return data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
 }
 
 async function renderSlots(){
