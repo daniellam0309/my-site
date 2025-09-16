@@ -232,14 +232,65 @@ function calcPrice() {
   const startHour = Number(startInput.value.slice(0,2));
   let sum = 0;
   for (let i = 0; i < dur; i++) {
-    const h = startHour + i;
-    sum += hourlyRate(dateEl.value, h);
+    sum += hourlyRate(dateEl.value, startHour + i);
   }
   const total = Math.round(sum * DISCOUNT); // 全部金額最後再套 8 折
   totalPriceEl.textContent = `MOP ${total}`;
 }
 
 // Realtime：當天有人新預約 → 重新渲染
+async function renderSlots(){
+  // 清空原有按鈕
+  slotsEl.innerHTML = '';
+  startInput.value = '';
+  const iso = dateEl.value;
+  const duration = parseInt(durationEl.value || '0', 10);
+  if (!iso || !duration) return;
+
+  // 查當日已被預約的區間
+  const existing = await getBookingsByDate(iso);
+  const occupied = (existing || []).map(b => [toMin(b.start_time), toMin(b.end_time)]);
+
+  // 產生可選起始整點（每小時）
+  for (let h = OPEN_HOUR; h + duration <= CLOSE_HOUR; h++) {
+    const start = `${String(h).padStart(2,'0')}:00`;
+    const endHour = h + duration;
+    const end = `${String(endHour).padStart(2,'0')}:00`;
+    const s = h * 60;
+    const e = endHour * 60;
+
+    const illegal = endHour > CLOSE_HOUR;
+    const blocked = occupied.some(([os,oe]) => overlap(s, e, os, oe));
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = `${start}–${end}`;
+    btn.disabled = illegal || blocked;
+    btn.className = 'px-3 py-2 rounded border mr-2 mb-2 ' +
+      (btn.disabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-indigo-50');
+
+    if (!btn.disabled){
+      btn.addEventListener('click', () => {
+        startInput.value = start;
+        // 樣式切換
+        [...slotsEl.querySelectorAll('button')].forEach(b => b.classList.remove('bg-violet-600','text-white'));
+        btn.classList.add('bg-violet-600','text-white');
+        calcPrice();
+      });
+    }
+
+    slotsEl.appendChild(btn);
+  }
+
+  // 若沒有任何可用按鈕，顯示提示
+  if (!slotsEl.querySelector('button:not([disabled])')){
+    const p = document.createElement('p');
+    p.className = 'text-sm text-gray-400';
+    p.textContent = '此日期在所選時長沒有可預約時段（可能已滿或超出 22:00）。';
+    slotsEl.appendChild(p);
+  }
+}
+
 sb.channel('bookings-realtime')
   .on('postgres_changes',{event:'*',schema:'public',table:'bookings'},(payload)=>{
     if (dateEl.value) renderSlots();
