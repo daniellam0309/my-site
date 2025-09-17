@@ -8,7 +8,7 @@
   <link rel="icon" href="assets/logo.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     :root{ --violet:#7C3AED; --green:#22C55E; }
     body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
@@ -34,7 +34,7 @@
     <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
       <a href="#" class="flex items-center gap-3">
   <img src="./assets/logo.png" class="h-10 w-10 object-contain" alt="FWFS"/>
-        <div class="leading-tight">
+        <d.iv class="leading-tight">
           <p class="font-semibold">漁人碼頭足球場</p>
           <p class="text-xs text-slate-600">Fisherman’s Wharf Football Stadium</p>
         </div>
@@ -42,6 +42,7 @@
       <nav class="hidden md:flex items-center gap-8 text-sm">
         <a href="#about" class="hover:text-slate-600">關於</a>
         <a href="#pricing" class="hover:text-slate-600">價目</a>
+        <a href="#availability" class="hover:text-slate-600">時段表</a>
         <a href="#booking" class="hover:text-slate-600">預約</a>
         <a href="#contact" class="hover:text-slate-600">聯絡</a>
       </nav>
@@ -79,7 +80,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div
   </section>
 
   <!-- 價目 -->
@@ -105,6 +106,22 @@
   </section>
 
   <!-- 預約 -->
+  <!-- Google 試算表：可租用時段 -->
+  <section id="availability" class="max-w-7xl mx-auto px-5 py-16">
+    <h2 class="text-2xl font-semibold">可租用時段（即時）</h2>
+    <p class="mt-2 text-slate-600">此表由 Google 試算表提供，更新後數秒內會自動反映。若表格無法顯示，請先在 Google 試算表中「發佈到網路」。</p>
+    <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200">
+      <div class="relative w-full" style="height:70vh;max-height:900px;">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/1CSN0NFCYARyyMotPDCh8ThQIDujlMJZf3yAH2DWM878/pubhtml?gid=0&single=true&widget=true&headers=false"
+          class="absolute inset-0 w-full h-full"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
   <section id="booking" class="max-w-7xl mx-auto px-5 py-16">
     <h2 class="text-2xl font-semibold">線上預約</h2>
     <p class="mt-2 text-slate-600">選擇日期與時段（整點、1–2 小時）。系統會即時檢查並避免重覆。</p>
@@ -199,9 +216,7 @@ const DISCOUNT = 0.8; // 8折
 const NIGHT_FROM = 18; // 夜間起
 
 /** ====== 初始化 ====== **/
-let sb = null;
-try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-catch (e) { console.error('Supabase SDK 未載入，將不阻擋時段但也不會讀取已預約資料。', e); }
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 document.getElementById('year').textContent = new Date().getFullYear();
 const dateEl = document.getElementById('date');
 const durationEl = document.getElementById('duration');
@@ -217,7 +232,6 @@ renderSlots();
 calcPrice();
 dateEl.addEventListener('change', ()=>{ renderSlots(); calcPrice(); });
 durationEl.addEventListener('change', ()=>{ renderSlots(); calcPrice(); });
-startInput.addEventListener('change', calcPrice);
 
 /** ====== 價格計算 ====== **/
 function isWeekend(isoDate){
@@ -225,37 +239,39 @@ function isWeekend(isoDate){
   return day===0 || day===6;
 }
 function calcPrice() {
-  const dur = parseInt(durationEl.value || '0', 10);
-  const startVal = startInput.value || '';
-  if (!dur || !startVal) { totalPriceEl.textContent = '—'; return; }
-  const startHour = parseInt(startVal.slice(0,2), 10);
-  let sum = 0;
-  for (let i = 0; i < dur; i++) {
-    const h = startHour + i;
-    sum += (h >= NIGHT_FROM) ? NIGHT_RATE
-         : (isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE);
+  const dur       = parseInt(durationEl.value);                  // 時長
+  const startHour = parseInt(startInput.value.split(':')[0]);    // 取開始的「時」(00–23)
+
+  // 判斷使用哪個費率：夜間 > 週末 > 平日
+  let baseRate;
+  if (startHour >= NIGHT_FROM) {
+    baseRate = NIGHT_RATE;
+  } else {
+    baseRate = isWeekend(dateEl.value) ? WEEKEND_RATE : WEEKDAY_RATE;
   }
-  const total = Math.round(sum * DISCOUNT); // 全部金額最後再套 8 折
+
+  // 計算總價
+  let total = baseRate * dur;
+
+  // 平日白天給 8 折優惠
+  if (startHour < NIGHT_FROM && !isWeekend(dateEl.value)) {
+    total = total * DISCOUNT;
+  }
+
   totalPriceEl.textContent = `MOP ${total}`;
 }
 
-/** ====== 時段渲染（避免重疊） ====== **//** ====== 時段渲染（避免重疊） ====== **/
+/** ====== 時段渲染（避免重疊） ====== **/
 function pad(n){ return String(n).padStart(2,'0'); }
 function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 function overlap(aS,aE,bS,bE){ return aS < bE && bS < aE; } // [start, end)
 
 async function getBookingsByDate(isoDate){
-  if (!sb) return [];
-  try {
-    const { data, error } = await sb.from('bookings')
-      .select('start_time,end_time')
-      .eq('date', isoDate);
-    if (error) { console.error(error); return []; }
-    return data || [];
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
+  const { data, error } = await sb.from('bookings')
+    .select('start_time,end_time')
+    .eq('date', isoDate);
+  if (error) { console.error(error); return []; }
+  return data||[];
 }
 
 async function renderSlots(){
