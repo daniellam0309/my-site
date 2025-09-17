@@ -100,7 +100,7 @@
           <li>週末及公眾假期：MOP 600 / hr（8 折 → MOP 480）</li>
           <li>夜間 18:00–22:00：MOP 800 / hr（8 折 → MOP 640）</li>
         </ul>
-        <div class="mt-4 text-sm text-slate-500">* 以上價格僅示意，可在頁面底部 JS 區塊調整。</div>
+        <div class="mt-4 text-sm text-slate-500">* 以上價格僅示意。</div>
       </div>
     </div>
   </section>
@@ -109,7 +109,7 @@
   <!-- Google 試算表：可租用時段 -->
   <section id="availability" class="max-w-7xl mx-auto px-5 py-16">
     <h2 class="text-2xl font-semibold">可租用時段（即時）</h2>
-    <p class="mt-2 text-slate-600">此表由 Google 試算表提供，更新後數秒內會自動反映。若表格無法顯示，請先在 Google 試算表中「發佈到網路」。</p>
+    <p class="mt-2 text-slate-600">此表由 Google 試算表提供，有可能更新延遲，準確時間請向職員查詢。</p>
     <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200">
       <div class="relative w-full" style="height:70vh;max-height:900px;">
         <iframe
@@ -123,7 +123,7 @@
   </section>
 
   <section id="booking" class="max-w-7xl mx-auto px-5 py-16">
-    <h2 class="text-2xl font-semibold">線上預約</h2>
+    <h2 class="text-2xl font-semibold">預約查詢</h2>
     <p class="mt-2 text-slate-600">選擇日期與時段（整點、1–2 小時）。系統會即時檢查並避免重覆。</p>
 
     <div class="mt-6 grid md:grid-cols-3 gap-6">
@@ -163,9 +163,9 @@
         </div>
         <div>
           <label class="text-sm text-slate-600">備註</label>
-          <textarea id="notes" class="w-full h-20 rounded-xl border border-slate-300 px-3 py-2" placeholder="人數 / 活動類型…"></textarea>
+          <textarea id="notes" class="w-full h-20 rounded-xl border border-slate-300 px-3 py-2" placeholder="必填WECHAT或WTS APP ID / 活動類型…"></textarea>
         </div>
-        <button class="w-full rounded-full px-5 py-3 bg-black text-white hover:opacity-90">送出預約</button>
+        <button class="w-full rounded-full px-5 py-3 bg-black text-white hover:opacity-90">送出查詢</button>
         <p id="status" class="text-sm text-slate-600"></p>
       </form>
     </div>
@@ -200,7 +200,7 @@
     <div class="max-w-7xl mx-auto px-5 py-10 text-sm text-slate-500 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
       <p>© <span id="year"></span> Fisherman’s Wharf Football Stadium</p>
       <div class="flex items-center gap-3">
-        <a href="#booking" class="hover:opacity-80">立即預約</a>
+        <a href="#booking" class="hover:opacity-80">立即查詢</a>
         <a href="admin.html" class="hover:opacity-80">管理</a>
       </div>
     </div>
